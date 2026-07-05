@@ -8,6 +8,8 @@ const authRoutes = require("./modules/auth/auth.routes");
 const authMiddleware = require("./middleware/auth.middleware");
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
+const usersRoutes = require("./modules/users/users.routes");
+const facultiesRoutes = require("./modules/faculties/faculties.routes");
 
 const app = express();
 
@@ -44,6 +46,8 @@ app.get(
 
 // Authentication Routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", usersRoutes);
+app.use("/api/v1/faculties", facultiesRoutes);
 
 // 404 Handler
 app.use(notFound);
