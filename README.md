@@ -10,4 +10,20 @@ Backend API for the IBBUL Timetable Scheduling System.
 - PostgreSQL
 - JWT Authentication
 
-> Work in progress.
+## ✅ Completed
+
+- Backend project architecture
+- Express server setup
+- Supabase PostgreSQL integration
+- Core database schema
+- Authentication module
+- JWT authentication
+- Password hashing with bcrypt
+- Super Admin seed script
+- Global error handling
+- Standard API response utilities
+- Health check endpoint
+- Login with:
+  - Email
+  - Staff Number
+  - Matric Number

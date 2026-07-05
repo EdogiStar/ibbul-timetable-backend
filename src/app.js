@@ -5,11 +5,13 @@ const morgan = require("morgan");
 
 const authRoutes = require("./modules/auth/auth.routes");
 
+const authMiddleware = require("./middleware/auth.middleware");
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
@@ -21,11 +23,26 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/v1/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Server is running successfully.",
+    message: "IBBUL Timetable Backend is running successfully.",
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
   });
 });
 
-// API Routes
+// Protected Route (Temporary)
+app.get(
+  "/api/v1/protected",
+  authMiddleware("SUPER_ADMIN"),
+  (req, res) => {
+    res.status(200).json({
+      success: true,
+      message: "Access granted.",
+      user: req.user,
+    });
+  }
+);
+
+// Authentication Routes
 app.use("/api/v1/auth", authRoutes);
 
 // 404 Handler
