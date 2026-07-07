@@ -10,6 +10,22 @@ const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 const usersRoutes = require("./modules/users/users.routes");
 const facultiesRoutes = require("./modules/faculties/faculties.routes");
+const departmentsRoutes = require("./modules/departments/departments.routes");
+const programmesRoutes = require("./modules/programmes/programmes.routes");
+const levelsRoutes = require("./modules/levels/levels.routes");
+const sessionsRoutes = require("./modules/sessions/sessions.routes");
+const semestersRoutes = require("./modules/semesters/semesters.routes");
+const lecturersRoutes = require("./modules/lecturers/lecturers.routes");
+const studentsRoutes = require("./modules/students/students.routes");
+const venuesRoutes = require("./modules/venues/venues.routes");
+const coursesRoutes = require("./modules/courses/courses.routes");
+const courseAllocationRoutes = require("./modules/course-allocation/course-allocation.routes");
+const timetableRoutes = require("./modules/timetable/timetable.routes");
+const courseOfferingsRoutes = require("./modules/course-offerings/course-offerings.routes");
+
+
+
+
 
 const app = express();
 
@@ -48,6 +64,21 @@ app.get(
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/faculties", facultiesRoutes);
+app.use("/api/v1/departments", departmentsRoutes);
+app.use("/api/v1/programmes", programmesRoutes);
+app.use("/api/v1/levels", levelsRoutes);
+app.use("/api/v1/sessions", sessionsRoutes);
+app.use("/api/v1/semesters", semestersRoutes);
+app.use("/api/v1/lecturers", lecturersRoutes);
+app.use("/api/v1/students", studentsRoutes);
+app.use("/api/v1/venues", venuesRoutes);
+app.use("/api/v1/courses", coursesRoutes);
+app.use("/api/v1/course-offerings", courseOfferingsRoutes);
+app.use("/api/v1/course-allocations", courseAllocationRoutes);
+app.use("/api/v1/timetables", timetableRoutes);
+
+
+
 
 // 404 Handler
 app.use(notFound);

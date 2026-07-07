@@ -1,43 +1,38 @@
 const express = require("express");
 
-const router = express.Router();
-
-const departmentsController = require("./departments.controller");
+const controller = require("./course-offerings.controller");
 const authMiddleware = require("../../middleware/auth.middleware");
 
-// Create Department
+const router = express.Router();
+
 router.post(
   "/",
   authMiddleware("SUPER_ADMIN"),
-  departmentsController.createDepartment
+  controller.createCourseOffering
 );
 
-// Get All Departments
 router.get(
   "/",
   authMiddleware("SUPER_ADMIN"),
-  departmentsController.getAllDepartments
+  controller.getAllCourseOfferings
 );
 
-// Get Department By ID
 router.get(
   "/:id",
   authMiddleware("SUPER_ADMIN"),
-  departmentsController.getDepartmentById
+  controller.getCourseOfferingById
 );
 
-// Update Department
 router.put(
   "/:id",
   authMiddleware("SUPER_ADMIN"),
-  departmentsController.updateDepartment
+  controller.updateCourseOffering
 );
 
-// Delete Department
 router.delete(
   "/:id",
   authMiddleware("SUPER_ADMIN"),
-  departmentsController.deleteDepartment
+  controller.deleteCourseOffering
 );
 
 module.exports = router;

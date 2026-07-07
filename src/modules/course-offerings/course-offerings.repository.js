@@ -1,9 +1,9 @@
 const supabase = require("../../database/supabase");
 
-class TimetableRepository {
+class CourseOfferingsRepository {
   async create(payload) {
     const { data, error } = await supabase
-      .from("timetable_entries")
+      .from("course_offerings")
       .insert(payload)
       .select(`
         *,
@@ -12,28 +12,24 @@ class TimetableRepository {
           course_code,
           course_title
         ),
-        lecturers(
-          id,
-          full_name,
-          staff_id
-        ),
-        departments(
+        programmes(
           id,
           code,
           name
         ),
-        faculties(
+        levels(
           id,
           code,
           name
         ),
-        venues(
+        academic_sessions(
           id,
-          venue_code,
-          venue_name
+          name
         ),
-        group_lectures(
-          id
+        semesters(
+          id,
+          code,
+          name
         )
       `)
       .single();
@@ -45,7 +41,7 @@ class TimetableRepository {
 
   async findAll() {
     const { data, error } = await supabase
-      .from("timetable_entries")
+      .from("course_offerings")
       .select(`
         *,
         courses(
@@ -53,33 +49,27 @@ class TimetableRepository {
           course_code,
           course_title
         ),
-        lecturers(
-          id,
-          full_name,
-          staff_id
-        ),
-        departments(
+        programmes(
           id,
           code,
           name
         ),
-        faculties(
+        levels(
           id,
           code,
           name
         ),
-        venues(
+        academic_sessions(
           id,
-          venue_code,
-          venue_name
+          name
         ),
-        group_lectures(
-          id
+        semesters(
+          id,
+          code,
+          name
         )
       `)
-      .order("created_at", {
-        ascending: false,
-      });
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
 
@@ -88,7 +78,7 @@ class TimetableRepository {
 
   async findById(id) {
     const { data, error } = await supabase
-      .from("timetable_entries")
+      .from("course_offerings")
       .select(`
         *,
         courses(
@@ -96,28 +86,24 @@ class TimetableRepository {
           course_code,
           course_title
         ),
-        lecturers(
-          id,
-          full_name,
-          staff_id
-        ),
-        departments(
+        programmes(
           id,
           code,
           name
         ),
-        faculties(
+        levels(
           id,
           code,
           name
         ),
-        venues(
+        academic_sessions(
           id,
-          venue_code,
-          venue_name
+          name
         ),
-        group_lectures(
-          id
+        semesters(
+          id,
+          code,
+          name
         )
       `)
       .eq("id", id)
@@ -130,7 +116,7 @@ class TimetableRepository {
 
   async update(id, payload) {
     const { data, error } = await supabase
-      .from("timetable_entries")
+      .from("course_offerings")
       .update(payload)
       .eq("id", id)
       .select()
@@ -143,7 +129,7 @@ class TimetableRepository {
 
   async delete(id) {
     const { error } = await supabase
-      .from("timetable_entries")
+      .from("course_offerings")
       .delete()
       .eq("id", id);
 
@@ -153,4 +139,4 @@ class TimetableRepository {
   }
 }
 
-module.exports = new TimetableRepository();
+module.exports = new CourseOfferingsRepository();
