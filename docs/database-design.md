@@ -1,125 +1,203 @@
-# IBBUL Timetable Scheduling System
+# Database Design
 
-## Database Design
+## Overview
 
-### Overview
-
-This document describes the database architecture for the IBBUL Timetable Scheduling System.
-
-### Design Principles
-
-- PostgreSQL Database
-- UUID primary keys
-- Human-readable unique codes
-- Soft delete support
-- Lifecycle status tracking
-- Audit fields
-- Role-Based Access Control (RBAC)
-- Modular database design
-- Rule-driven scheduling engine
+The IBBUL Timetable Scheduling System uses a **PostgreSQL** database designed with a modular architecture to support academic management, timetable scheduling, and role-based access control. The schema is optimized for scalability, data integrity, and efficient scheduling operations.
 
 ---
 
-## SQL Modules
+## Design Principles
 
-001_core.sql
+- PostgreSQL relational database
+- UUID primary keys
+- Foreign key relationships
+- Human-readable unique codes
+- Audit timestamps
+- Role-Based Access Control (RBAC)
+- Modular SQL structure
+- Rule-driven timetable scheduling
 
+---
+
+## Database Modules
+
+### 001_core.sql
+Core system tables:
 - Roles
 - Users
-- Authentication support
+- Authentication
 
-002_academics.sql
-
+### 002_academics.sql
+Academic structure:
 - Faculties
 - Departments
 - Programmes
 - Levels
-- Sessions
+- Academic Sessions
 - Semesters
-- Student Cohorts
 
-003_courses.sql
-
+### 003_courses.sql
+Course management:
 - Courses
 - Course Offerings
-- Course Allocation
+- Course Allocations
 - Group Lectures
-- Borrowed Courses
 
-004_venues.sql
-
+### 004_venues.sql
+Venue management:
 - Buildings
 - Venue Types
 - Venues
 - Venue Permissions
-- Venue Availability
+- Venue Unavailability
 
-005_timetable.sql
-
+### 005_timetable.sql
+Timetable management:
 - Timetable Versions
 - Timetable Entries
 - Days
 - Time Slots
 - Change Requests
 
-006_scheduler.sql
-
+### 006_scheduler.sql
+Scheduling engine:
 - Scheduling Jobs
 - Scheduling Rules
 - Rule Results
-- Statistics
+- Scheduler Statistics
 
-007_seed_data.sql
-
+### 007_seed_data.sql
+Initial system data:
 - Roles
 - Days
 - Time Slots
 - Default Configuration
-# Core Tables
-
-## roles
-
-Purpose:
-Stores all system roles.
-
-Columns
-
-- id (UUID, Primary Key)
-- code (TEXT, UNIQUE)
-- name (TEXT)
-- description (TEXT)
-- status (TEXT)
-- created_at (TIMESTAMPTZ)
-- updated_at (TIMESTAMPTZ)
-
-Relationships
-
-- One role has many users.
 
 ---
 
-## users
+# Core Tables
 
-Purpose:
-Stores all system users.
+## Roles
+Stores all system roles and permissions.
 
-Columns
+**Key Fields**
+- id
+- code
+- name
+- description
+- status
+- created_at
+- updated_at
 
-- id (UUID, Primary Key)
-- code (TEXT, UNIQUE)
-- email (TEXT, UNIQUE)
-- password_hash (TEXT)
-- full_name (TEXT)
-- phone_number (TEXT)
-- role_id (UUID → roles.id)
-- faculty_id (UUID → faculties.id, nullable)
-- department_id (UUID → departments.id, nullable)
-- staff_number (TEXT, nullable)
-- matric_number (TEXT, nullable)
-- status (TEXT)
-- created_by (UUID, nullable)
-- updated_by (UUID, nullable)
-- deleted_by (UUID, nullable)
-- created_at (TIMESTAMPTZ)
-- updated_at (TIMESTAMPTZ)
-- deleted_at (TIMESTAMPTZ, nullable)
+Relationship:
+- One role can be assigned to many users.
+
+---
+
+## Users
+Stores authenticated users of the system.
+
+**Key Fields**
+- id
+- code
+- full_name
+- email
+- password_hash
+- phone
+- role_id
+- staff_number
+- matric_number
+- status
+- created_at
+- updated_at
+
+Relationship:
+- Belongs to a role.
+
+---
+
+# Academic Tables
+
+- Faculties
+- Departments
+- Programmes
+- Levels
+- Academic Sessions
+- Semesters
+
+These tables define the university's academic hierarchy and are referenced by courses, lecturers, and timetable records.
+
+---
+
+# Course Management
+
+The course module manages:
+
+- Courses
+- Course Offerings
+- Course Allocations
+- Group Lectures
+
+It links lecturers to courses and specifies which programmes, levels, sessions, and semesters a course is offered.
+
+---
+
+# Venue Management
+
+Venue-related tables include:
+
+- Buildings
+- Venue Types
+- Venues
+- Venue Permissions
+- Venue Unavailability
+
+These tables ensure that lectures are assigned to suitable venues based on capacity, availability, and venue type.
+
+---
+
+# Timetable Management
+
+Timetable scheduling is managed through:
+
+- Timetable Versions
+- Timetable Entries
+- Days
+- Time Slots
+- Timetable Change Requests
+
+These tables store lecture schedules and support versioning and timetable updates.
+
+---
+
+# Scheduling Engine
+
+The scheduling engine consists of:
+
+- Scheduling Jobs
+- Scheduling Rules
+- Rule Results
+- Scheduler Statistics
+
+These components validate timetable constraints, execute scheduling operations, and record scheduling outcomes.
+
+---
+
+# Key Relationships
+
+- One Faculty → Many Departments
+- One Department → Many Programmes
+- One Department → Many Courses
+- One Department → Many Lecturers
+- One Programme → Many Course Offerings
+- One Course → Many Course Offerings
+- One Course Offering → One Lecturer Allocation
+- One Venue → Many Timetable Entries
+- One Lecturer → Many Timetable Entries
+- One Role → Many Users
+
+---
+
+## Summary
+
+The database is organized into independent modules that separate authentication, academic management, course administration, venue management, timetable generation, and scheduling. This modular structure improves maintainability, scalability, and supports efficient timetable generation while preserving data integrity through foreign key constraints.
