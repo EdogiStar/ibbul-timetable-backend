@@ -22,6 +22,7 @@ const coursesRoutes = require("./modules/courses/courses.routes");
 const courseAllocationRoutes = require("./modules/course-allocation/course-allocation.routes");
 const timetableRoutes = require("./modules/timetable/timetable.routes");
 const courseOfferingsRoutes = require("./modules/course-offerings/course-offerings.routes");
+const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
 
 
 
@@ -62,6 +63,7 @@ app.get(
 
 // Authentication Routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/faculties", facultiesRoutes);
 app.use("/api/v1/departments", departmentsRoutes);
