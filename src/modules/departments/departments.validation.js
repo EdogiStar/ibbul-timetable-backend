@@ -17,10 +17,6 @@ const createDepartmentSchema = Joi.object({
     .max(150)
     .required(),
 
-  description: Joi.string()
-    .trim()
-    .allow("", null),
-
   status: Joi.string()
     .valid("ACTIVE", "INACTIVE")
     .default("ACTIVE"),
@@ -39,10 +35,6 @@ const updateDepartmentSchema = Joi.object({
     .trim()
     .min(3)
     .max(150),
-
-  description: Joi.string()
-    .trim()
-    .allow("", null),
 
   status: Joi.string()
     .valid("ACTIVE", "INACTIVE"),
