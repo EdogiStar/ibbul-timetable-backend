@@ -115,17 +115,43 @@ class CourseOfferingsRepository {
   }
 
   async update(id, payload) {
-    const { data, error } = await supabase
-      .from("course_offerings")
-      .update(payload)
-      .eq("id", id)
-      .select()
-      .single();
+  const { data, error } = await supabase
+    .from("course_offerings")
+    .update(payload)
+    .eq("id", id)
+    .select(`
+      *,
+      courses(
+        id,
+        course_code,
+        course_title
+      ),
+      programmes(
+        id,
+        code,
+        name
+      ),
+      levels(
+        id,
+        code,
+        name
+      ),
+      academic_sessions(
+        id,
+        name
+      ),
+      semesters(
+        id,
+        code,
+        name
+      )
+    `)
+    .single();
 
-    if (error) throw error;
+  if (error) throw error;
 
-    return data;
-  }
+  return data;
+}
 
   async delete(id) {
     const { error } = await supabase
