@@ -26,15 +26,20 @@ const createCourseOfferingSchema = Joi.object({
 });
 
 const updateCourseOfferingSchema = Joi.object({
-  course_id: Joi.string().uuid(),
+  course_id: Joi.string()
+    .uuid(),
 
-  programme_id: Joi.string().uuid(),
+  programme_id: Joi.string()
+    .uuid(),
 
-  level_id: Joi.string().uuid(),
+  level_id: Joi.string()
+    .uuid(),
 
-  session_id: Joi.string().uuid(),
+  session_id: Joi.string()
+    .uuid(),
 
-  semester_id: Joi.string().uuid(),
+  semester_id: Joi.string()
+    .uuid(),
 
   is_compulsory: Joi.boolean(),
 }).min(1);
