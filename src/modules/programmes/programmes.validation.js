@@ -17,9 +17,11 @@ const createProgrammeSchema = Joi.object({
     .max(150)
     .required(),
 
-  description: Joi.string()
-    .trim()
-    .allow("", null),
+  duration_years: Joi.number()
+    .integer()
+    .min(1)
+    .max(10)
+    .required(),
 
   status: Joi.string()
     .valid("ACTIVE", "INACTIVE")
@@ -27,8 +29,7 @@ const createProgrammeSchema = Joi.object({
 });
 
 const updateProgrammeSchema = Joi.object({
-  department_id: Joi.string()
-    .uuid(),
+  department_id: Joi.string().uuid(),
 
   code: Joi.string()
     .trim()
@@ -40,9 +41,10 @@ const updateProgrammeSchema = Joi.object({
     .min(3)
     .max(150),
 
-  description: Joi.string()
-    .trim()
-    .allow("", null),
+  duration_years: Joi.number()
+    .integer()
+    .min(1)
+    .max(10),
 
   status: Joi.string()
     .valid("ACTIVE", "INACTIVE"),
