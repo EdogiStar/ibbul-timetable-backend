@@ -16,10 +16,6 @@ const createDepartmentSchema = Joi.object({
     .min(3)
     .max(150)
     .required(),
-
-  status: Joi.string()
-    .valid("ACTIVE", "INACTIVE")
-    .default("ACTIVE"),
 });
 
 const updateDepartmentSchema = Joi.object({
@@ -35,9 +31,6 @@ const updateDepartmentSchema = Joi.object({
     .trim()
     .min(3)
     .max(150),
-
-  status: Joi.string()
-    .valid("ACTIVE", "INACTIVE"),
 }).min(1);
 
 module.exports = {
