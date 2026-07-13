@@ -7,20 +7,39 @@ class CourseAllocationRepository {
       .insert(payload)
       .select(`
         *,
-        course_offerings (
-          id,
-          course_id,
-          programme_id,
-          level_id,
-          session_id,
-          semester_id,
-          is_compulsory
-        ),
-        lecturers (
-          id,
-          full_name,
-          staff_id
-        )
+        course_offerings(
+  id,
+  is_compulsory,
+  courses(
+    id,
+    course_code,
+    course_title
+  ),
+  programmes(
+    id,
+    code,
+    name
+  ),
+  levels(
+    id,
+    code,
+    name
+  ),
+  academic_sessions(
+    id,
+    name
+  ),
+  semesters(
+    id,
+    code,
+    name
+  )
+),
+lecturers(
+  id,
+  full_name,
+  staff_id
+)
       `)
       .single();
 
@@ -34,20 +53,39 @@ class CourseAllocationRepository {
       .from("course_allocations")
       .select(`
         *,
-        course_offerings (
-          id,
-          course_id,
-          programme_id,
-          level_id,
-          session_id,
-          semester_id,
-          is_compulsory
-        ),
-        lecturers (
-          id,
-          full_name,
-          staff_id
-        )
+       course_offerings(
+  id,
+  is_compulsory,
+  courses(
+    id,
+    course_code,
+    course_title
+  ),
+  programmes(
+    id,
+    code,
+    name
+  ),
+  levels(
+    id,
+    code,
+    name
+  ),
+  academic_sessions(
+    id,
+    name
+  ),
+  semesters(
+    id,
+    code,
+    name
+  )
+),
+lecturers(
+  id,
+  full_name,
+  staff_id
+)
       `)
       .order("created_at", { ascending: false });
 
@@ -61,20 +99,39 @@ class CourseAllocationRepository {
       .from("course_allocations")
       .select(`
         *,
-        course_offerings (
-          id,
-          course_id,
-          programme_id,
-          level_id,
-          session_id,
-          semester_id,
-          is_compulsory
-        ),
-        lecturers (
-          id,
-          full_name,
-          staff_id
-        )
+        course_offerings(
+  id,
+  is_compulsory,
+  courses(
+    id,
+    course_code,
+    course_title
+  ),
+  programmes(
+    id,
+    code,
+    name
+  ),
+  levels(
+    id,
+    code,
+    name
+  ),
+  academic_sessions(
+    id,
+    name
+  ),
+  semesters(
+    id,
+    code,
+    name
+  )
+),
+lecturers(
+  id,
+  full_name,
+  staff_id
+)
       `)
       .eq("id", id)
       .single();
@@ -91,20 +148,39 @@ class CourseAllocationRepository {
       .eq("id", id)
       .select(`
         *,
-        course_offerings (
-          id,
-          course_id,
-          programme_id,
-          level_id,
-          session_id,
-          semester_id,
-          is_compulsory
-        ),
-        lecturers (
-          id,
-          full_name,
-          staff_id
-        )
+        course_offerings(
+  id,
+  is_compulsory,
+  courses(
+    id,
+    course_code,
+    course_title
+  ),
+  programmes(
+    id,
+    code,
+    name
+  ),
+  levels(
+    id,
+    code,
+    name
+  ),
+  academic_sessions(
+    id,
+    name
+  ),
+  semesters(
+    id,
+    code,
+    name
+  )
+),
+lecturers(
+  id,
+  full_name,
+  staff_id
+)
       `)
       .single();
 
