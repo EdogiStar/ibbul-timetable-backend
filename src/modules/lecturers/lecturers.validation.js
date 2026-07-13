@@ -17,10 +17,6 @@ const createLecturerSchema = Joi.object({
     .max(50)
     .required(),
 
-  availability: Joi.array()
-    .items(Joi.object())
-    .optional(),
-
   max_hours_per_day: Joi.number()
     .integer()
     .min(1)
@@ -41,9 +37,6 @@ const updateLecturerSchema = Joi.object({
     .trim()
     .min(2)
     .max(50),
-
-  availability: Joi.array()
-    .items(Joi.object()),
 
   max_hours_per_day: Joi.number()
     .integer()
