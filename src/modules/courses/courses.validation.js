@@ -19,8 +19,7 @@ const createCourseSchema = Joi.object({
 
   level: Joi.string()
     .trim()
-    .valid("100", "200", "300", "400", "500", "600")
-    .default("100"),
+    .required(),
 
   semester: Joi.string()
     .valid("First", "Second")
@@ -65,7 +64,7 @@ const updateCourseSchema = Joi.object({
     .max(200),
 
   level: Joi.string()
-    .valid("100", "200", "300", "400", "500", "600"),
+    .trim(),
 
   semester: Joi.string()
     .valid("First", "Second"),
