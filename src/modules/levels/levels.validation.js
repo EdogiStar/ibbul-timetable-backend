@@ -18,14 +18,6 @@ const createLevelSchema = Joi.object({
     .min(100)
     .max(1000)
     .required(),
-
-  description: Joi.string()
-    .trim()
-    .allow("", null),
-
-  status: Joi.string()
-    .valid("ACTIVE", "INACTIVE")
-    .default("ACTIVE"),
 });
 
 const updateLevelSchema = Joi.object({
@@ -43,13 +35,6 @@ const updateLevelSchema = Joi.object({
     .integer()
     .min(100)
     .max(1000),
-
-  description: Joi.string()
-    .trim()
-    .allow("", null),
-
-  status: Joi.string()
-    .valid("ACTIVE", "INACTIVE"),
 }).min(1);
 
 module.exports = {
