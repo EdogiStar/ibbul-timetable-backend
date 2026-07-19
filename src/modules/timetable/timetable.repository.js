@@ -3,14 +3,14 @@ const supabase = require("../../database/supabase");
 const TIMETABLE_SELECT = `
   *,
   courses(
-    id,
-    course_code,
-    course_title,
-    student_count,
-    sessions_per_week,
-    hours_per_session,
-    preferred_venue_type
-  ),
+  id,
+  course_code,
+  course_title,
+  student_count,
+  sessions_per_week,
+  hours_per_week,
+  preferred_venue_type
+),
   course_offerings(
     id
   ),
