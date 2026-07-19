@@ -5,6 +5,35 @@ const authMiddleware = require("../../middleware/auth.middleware");
 
 const router = express.Router();
 
+/*
+|--------------------------------------------------------------------------
+| Timetable Generation
+|--------------------------------------------------------------------------
+*/
+router.post(
+  "/generate",
+  authMiddleware("SUPER_ADMIN"),
+  controller.generateTimetable
+);
+
+router.post(
+  "/group/generate",
+  authMiddleware("SUPER_ADMIN"),
+  controller.generateGroupTimetable
+);
+
+router.post(
+  "/normal/generate",
+  authMiddleware("SUPER_ADMIN"),
+  controller.generateNormalTimetable
+);
+
+/*
+|--------------------------------------------------------------------------
+| Timetable Management
+|--------------------------------------------------------------------------
+*/
+
 router.post(
   "/",
   authMiddleware("SUPER_ADMIN"),

@@ -23,8 +23,9 @@ const courseAllocationRoutes = require("./modules/course-allocation/course-alloc
 const timetableRoutes = require("./modules/timetable/timetable.routes");
 const courseOfferingsRoutes = require("./modules/course-offerings/course-offerings.routes");
 const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
-
-
+const groupLecturesRoutes = require("./modules/group-lectures/group-lectures.routes");
+const groupLectureGroupsRoutes = require("./modules/group-lecture-groups/group-lecture-groups.routes");
+const groupParticipantsRoutes = require("./modules/group-participants/group-participants.routes");
 
 
 
@@ -78,8 +79,9 @@ app.use("/api/v1/courses", coursesRoutes);
 app.use("/api/v1/course-offerings", courseOfferingsRoutes);
 app.use("/api/v1/course-allocations", courseAllocationRoutes);
 app.use("/api/v1/timetables", timetableRoutes);
-
-
+app.use( "/api/v1/group-lectures", groupLecturesRoutes);
+app.use("/api/v1/group-lecture-groups", groupLectureGroupsRoutes);
+app.use("/api/v1/group-participants", groupParticipantsRoutes);
 
 
 // 404 Handler

@@ -13,48 +13,52 @@ const createTimetableSchema = Joi.object({
     .uuid()
     .required(),
 
+  faculty_id: Joi.string()
+    .uuid()
+    .required(),
+
   venue_id: Joi.string()
     .uuid()
     .allow(null),
 
-  faculty_id: Joi.string()
+  programme_id: Joi.string()
+    .uuid()
+    .required(),
+
+  level_id: Joi.string()
+    .uuid()
+    .required(),
+
+  session_id: Joi.string()
+    .uuid()
+    .required(),
+
+  semester_id: Joi.string()
+    .uuid()
+    .required(),
+
+  day_id: Joi.string()
+    .uuid()
+    .required(),
+
+  time_slot_id: Joi.string()
+    .uuid()
+    .required(),
+
+  course_allocation_id: Joi.string()
     .uuid()
     .allow(null),
-
-  day: Joi.string()
-    .valid(
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday"
-    )
-    .required(),
-
-  start_time: Joi.string()
-    .required(),
-
-  end_time: Joi.string()
-    .required(),
-
-  level: Joi.string()
-    .allow("", null),
-
-  semester: Joi.string()
-    .valid("First", "Second")
-    .default("First"),
-
-  academic_session: Joi.string()
-    .allow("", null),
-
-  is_group: Joi.boolean()
-    .default(false),
 
   group_lecture_id: Joi.string()
     .uuid()
     .allow(null),
+
+  session_number: Joi.number()
+    .integer()
+    .min(1),
+
+  is_group: Joi.boolean()
+    .default(false),
 
   is_locked: Joi.boolean()
     .default(false),
@@ -67,33 +71,35 @@ const updateTimetableSchema = Joi.object({
 
   department_id: Joi.string().uuid(),
 
+  faculty_id: Joi.string().uuid(),
+
   venue_id: Joi.string().uuid().allow(null),
 
-  faculty_id: Joi.string().uuid().allow(null),
+  programme_id: Joi.string().uuid(),
 
-  day: Joi.string().valid(
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday"
-  ),
+  level_id: Joi.string().uuid(),
 
-  start_time: Joi.string(),
+  session_id: Joi.string().uuid(),
 
-  end_time: Joi.string(),
+  semester_id: Joi.string().uuid(),
 
-  level: Joi.string().allow("", null),
+  day_id: Joi.string().uuid(),
 
-  semester: Joi.string().valid("First", "Second"),
+  time_slot_id: Joi.string().uuid(),
 
-  academic_session: Joi.string().allow("", null),
+  course_allocation_id: Joi.string()
+    .uuid()
+    .allow(null),
+
+  group_lecture_id: Joi.string()
+    .uuid()
+    .allow(null),
+
+  session_number: Joi.number()
+    .integer()
+    .min(1),
 
   is_group: Joi.boolean(),
-
-  group_lecture_id: Joi.string().uuid().allow(null),
 
   is_locked: Joi.boolean(),
 }).min(1);
