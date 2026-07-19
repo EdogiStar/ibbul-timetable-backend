@@ -26,7 +26,8 @@ const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
 const groupLecturesRoutes = require("./modules/group-lectures/group-lectures.routes");
 const groupLectureGroupsRoutes = require("./modules/group-lecture-groups/group-lecture-groups.routes");
 const groupParticipantsRoutes = require("./modules/group-participants/group-participants.routes");
-
+const daysRoutes = require("./modules/days/days.routes");
+const timeSlotsRoutes = require("./modules/time-slots/time-slots.routes");
 
 
 const app = express();
@@ -82,6 +83,8 @@ app.use("/api/v1/timetables", timetableRoutes);
 app.use( "/api/v1/group-lectures", groupLecturesRoutes);
 app.use("/api/v1/group-lecture-groups", groupLectureGroupsRoutes);
 app.use("/api/v1/group-participants", groupParticipantsRoutes);
+app.use("/api/v1/days", daysRoutes);
+app.use("/api/v1/time-slots", timeSlotsRoutes);
 
 
 // 404 Handler

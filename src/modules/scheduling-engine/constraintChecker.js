@@ -35,6 +35,27 @@ function canPlaceSession({
         }
 
     }
+    
+    /**
+ * ----------------------------------------------------------
+ * Friday Prayer Constraint
+ *
+ * Block Friday 01-02 (13:00 - 14:00)
+ * for all lectures.
+ * ----------------------------------------------------------
+ */
+
+const isFriday =
+    day.code === "FRI";
+
+const blockedSlot =
+    slots.some(
+        slot => slot.code === "01-02"
+    );
+
+if (isFriday && blockedSlot) {
+    return false;
+}
 
 
     /**
