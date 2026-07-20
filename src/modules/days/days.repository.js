@@ -17,7 +17,7 @@ class DaysRepository {
     const { data, error } = await supabase
       .from("days")
       .select("*")
-      .order("code");
+      .order("sort_order");
 
     if (error) throw error;
 
