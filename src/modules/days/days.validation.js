@@ -12,6 +12,11 @@ const createDaySchema = Joi.object({
     .min(3)
     .max(50)
     .required(),
+
+  sort_order: Joi.number()
+    .integer()
+    .min(1)
+    .required(),
 });
 
 const updateDaySchema = Joi.object({
@@ -24,6 +29,10 @@ const updateDaySchema = Joi.object({
     .trim()
     .min(3)
     .max(50),
+
+  sort_order: Joi.number()
+    .integer()
+    .min(1),
 }).min(1);
 
 module.exports = {
