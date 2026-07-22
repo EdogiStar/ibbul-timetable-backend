@@ -70,6 +70,19 @@ exports.updateCourseAllocation = asyncHandler(async (req, res) => {
   );
 });
 
+exports.getAvailableCourseAllocations = asyncHandler(
+  async (req, res) => {
+    const allocations =
+      await courseAllocationService.getAvailableCourseAllocations();
+
+    return ApiResponse.success(
+      res,
+      allocations,
+      "Available course allocations retrieved successfully."
+    );
+  }
+);
+
 exports.deleteCourseAllocation = asyncHandler(async (req, res) => {
   await courseAllocationService.deleteCourseAllocation(req.params.id);
 

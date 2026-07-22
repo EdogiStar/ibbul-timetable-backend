@@ -19,6 +19,11 @@ router.get(
   courseAllocationController.getAllCourseAllocations
 );
 
+router.get(
+  "/available",
+  courseAllocationController.getAvailableCourseAllocations
+);
+
 // Get Course Allocation By ID
 router.get(
   "/:id",

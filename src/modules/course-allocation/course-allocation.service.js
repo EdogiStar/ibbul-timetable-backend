@@ -8,6 +8,17 @@ class CourseAllocationService {
   async getAllCourseAllocations() {
     return await courseAllocationRepository.findAll();
   }
+  
+  /**
+ * ----------------------------------------------------
+ * Available Course Allocations
+ * ----------------------------------------------------
+ */
+async getAvailableCourseAllocations() {
+
+  return await courseAllocationRepository.findAvailable();
+
+}
 
   async getCourseAllocationById(id) {
     const allocation = await courseAllocationRepository.findById(id);

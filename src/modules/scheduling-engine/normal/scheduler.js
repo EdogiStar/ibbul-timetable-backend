@@ -1,368 +1,523 @@
 const repository = require("./repository");
-const { generateSessions } = require("../sessionGenerator");
-const { findPlacement } = require("../backtracking");
+
+const {
+    generateSessions
+} = require("../sessionGenerator");
+
+const {
+    findPlacement
+} = require("../backtracking");
+
 
 class NormalScheduler {
 
-    async generate() {
+    /**
+     * ----------------------------------------------------------
+     * Generate Normal Timetable
+     * ----------------------------------------------------------
+     *
+     * Supports two modes:
+     *
+     * 1. Bulk Scheduling
+     *    Schedules all eligible normal courses.
+     *
+     * 2. Selected Scheduling
+     *    Schedules only the selected course allocations.
+     *
+     * The actual scheduling logic remains inside this
+     * scheduling-engine module.
+     *
+     * ----------------------------------------------------------
+     */
+
+    async generate(options = {}) {
+
+
+        /**
+         * ------------------------------------------------------
+         * Scheduling Options
+         * ------------------------------------------------------
+         */
+
+        const {
+
+            courseAllocationIds = null,
+
+            targetSlot = null
+
+        } = options;
+
+
+        /**
+         * ------------------------------------------------------
+         * Load Required Data
+         * ------------------------------------------------------
+         */
 
         const [
 
             courseOfferings,
+
             courses,
+
             departments,
+
             courseAllocations,
+
             groupLectures,
+
             days,
+
             timeSlots,
+
             venues,
+
             timetableEntries
 
         ] = await Promise.all([
 
+
             repository.getCourseOfferings(),
+
+
             repository.getCourses(),
+
+
             repository.getDepartments(),
+
+
             repository.getCourseAllocations(),
+
+
             repository.getGroupLectures(),
+
+
             repository.getDays(),
+
+
             repository.getTimeSlots(),
+
+
             repository.getVenues(),
+
+
             repository.getExistingTimetable()
+
 
         ]);
 
 
+        /**
+         * ------------------------------------------------------
+         * Containers
+         * ------------------------------------------------------
+         */
+
         const entries = [];
 
+
+        /**
+         * ------------------------------------------------------
+         * Scheduling Statistics
+         * ------------------------------------------------------
+         */
+
         let skippedSessions = 0;
+
         let scheduledSessions = 0;
+
         let failedSessions = 0;
 
 
         /**
-         * ----------------------------------------------------------
-         * Remove courses already handled by group scheduler
-         * ----------------------------------------------------------
+         * ------------------------------------------------------
+         * Continue in Part 2...
+         * ------------------------------------------------------
+         */
+        
+                 /**
+         * ------------------------------------------------------
+         * Remove Courses Already Handled By Group Scheduler
+         * ------------------------------------------------------
+         *
+         * Group lectures have their own scheduler.
+         *
+         * Therefore, courses already used in a group lecture
+         * should not be scheduled again by the normal scheduler.
+         * ------------------------------------------------------
          */
 
         const groupCourseIds =
+
             groupLectures.map(
+
                 item => item.course_id
+
             );
 
 
-        const normalOfferings =
+        let normalOfferings =
+
             courseOfferings.filter(
+
                 offering =>
+
                     !groupCourseIds.includes(
+
                         offering.course_id
+
                     )
+
             );
 
 
         /**
-         * ----------------------------------------------------------
-         * Attach extra information needed by scheduler
-         * ----------------------------------------------------------
+         * ------------------------------------------------------
+         * Filter By Selected Course Allocations
+         * ------------------------------------------------------
+         *
+         * If courseAllocationIds are provided:
+         *
+         *     Schedule only those selected allocations.
+         *
+         * If courseAllocationIds are not provided:
+         *
+         *     Schedule all eligible normal course offerings.
+         *
+         * This allows the same scheduler to support:
+         *
+         * 1. Bulk timetable generation
+         *
+         * 2. Single course scheduling
+         *
+         * 3. Multiple selected course scheduling
+         *
+         * ------------------------------------------------------
+         */
+
+        if (
+
+            Array.isArray(courseAllocationIds) &&
+
+            courseAllocationIds.length > 0
+
+        ) {
+
+            normalOfferings =
+
+                normalOfferings.filter(
+
+                    offering =>
+
+                        courseAllocations.some(
+
+                            allocation =>
+
+                                allocation.course_offering_id ===
+                                    offering.id &&
+
+                                courseAllocationIds.includes(
+
+                                    allocation.id
+
+                                )
+
+                        )
+
+                );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Prepare Courses For Scheduling
+         * ------------------------------------------------------
+         *
+         * Attach all information required by the scheduler.
+         *
+         * ------------------------------------------------------
          */
 
         const preparedCourses =
+
             normalOfferings
-                .map(offering => {
 
-                    const course =
-                        courses.find(
-                            item =>
-                                item.id === offering.course_id
-                        );
+                .map(
 
-                    if (!course) {
-                        return null;
+                    offering => {
+
+
+                        /**
+                         * Find Course
+                         */
+
+                        const course =
+
+                            courses.find(
+
+                                item =>
+
+                                    item.id ===
+                                    offering.course_id
+
+                            );
+
+
+                        if (!course) {
+
+                            return null;
+
+                        }
+
+
+                        /**
+                         * Find Department
+                         */
+
+                        const department =
+
+                            departments.find(
+
+                                item =>
+
+                                    item.id ===
+                                    course.department_id
+
+                            );
+
+
+                        /**
+                         * Find Course Allocation
+                         */
+
+                        const allocation =
+
+                            courseAllocations.find(
+
+                                item =>
+
+                                    item.course_offering_id ===
+                                    offering.id
+
+                            );
+
+
+                        /**
+                         * Return Scheduler Input
+                         */
+
+                        return {
+
+                            ...course,
+
+
+                            course_id:
+
+                                course.id,
+
+
+                            course_offering_id:
+
+                                offering.id,
+
+
+                            programme_id:
+
+                                offering.programme_id,
+
+
+                            level_id:
+
+                                offering.level_id,
+
+
+                            session_id:
+
+                                offering.session_id,
+
+
+                            semester_id:
+
+                                offering.semester_id,
+
+
+                            department_id:
+
+                                course.department_id,
+
+
+                            faculty_id:
+
+                                department?.faculty_id ||
+                                null,
+
+
+                            lecturer_id:
+
+                                allocation?.lecturer_id ||
+                                null,
+
+
+                            course_allocation_id:
+
+                                allocation?.id ||
+                                null
+
+                        };
+
+
                     }
 
-                    const department =
-                        departments.find(
-                            item =>
-                                item.id === course.department_id
-                        );
+                )
 
-                    const allocation =
-                        courseAllocations.find(
-                            item =>
-                                item.course_offering_id === offering.id
-                        );
 
-                    return {
+                /**
+                 * Remove invalid courses
+                 */
 
-                        ...course,
-
-                        course_id:
-                            course.id,
-
-                        course_offering_id:
-                            offering.id,
-
-                        programme_id:
-                            offering.programme_id,
-
-                        level_id:
-                            offering.level_id,
-
-                        session_id:
-                            offering.session_id,
-
-                        semester_id:
-                            offering.semester_id,
-
-                        department_id:
-                            course.department_id,
-
-                        faculty_id:
-                            department?.faculty_id || null,
-
-                        lecturer_id:
-                            allocation?.lecturer_id || null,
-
-                        course_allocation_id:
-                            allocation?.id || null
-
-                    };
-
-                })
                 .filter(Boolean);
 
-        // Continue in Part 2...
+
+        /**
+         * ------------------------------------------------------
+         * Continue in Part 3...
+         * ------------------------------------------------------
+         */
         
-                /**
-         * ----------------------------------------------------------
-         * Generate schedulable sessions
-         * ----------------------------------------------------------
+                 /**
+         * ------------------------------------------------------
+         * Generate Schedulable Sessions
+         * ------------------------------------------------------
+         *
+         * Each course may require multiple sessions per week.
+         *
+         * sessionGenerator converts the prepared courses
+         * into individual schedulable sessions.
+         *
+         * Example:
+         *
+         * Course requires 2 sessions per week
+         *
+         *        ↓
+         *
+         * Session 1
+         * Session 2
+         *
+         * Each session will be scheduled independently.
+         *
+         * ------------------------------------------------------
          */
 
-        console.log("\nPrepared Courses:");
-        console.log(preparedCourses);
+        const sessions =
 
-        let sessions =
             generateSessions(
+
                 preparedCourses
+
             );
 
-        console.log("\nGenerated Sessions:");
-        console.log(sessions);
+
+        /**
+         * ------------------------------------------------------
+         * Total Sessions Before Filtering
+         * ------------------------------------------------------
+         */
 
         const totalSessions =
+
             sessions.length;
 
 
         /**
-         * ----------------------------------------------------------
-         * Option A
-         * Skip sessions already scheduled
-         * ----------------------------------------------------------
+         * ------------------------------------------------------
+         * Find Already Scheduled Sessions
+         * ------------------------------------------------------
+         *
+         * We use course_offering_id + session_number
+         * to identify a specific course session.
+         *
+         * Group timetable entries are ignored because
+         * group lectures are handled separately.
+         *
+         * ------------------------------------------------------
          */
 
         const scheduledKeys =
+
             timetableEntries
+
                 .filter(
-                    entry => !entry.is_group
-                )
-                .map(
+
                     entry =>
+
+                        !entry.is_group
+
+                )
+
+                .map(
+
+                    entry =>
+
                         `${entry.course_offering_id}-${entry.session_number}`
+
                 );
 
 
-        sessions =
-            sessions.filter(session => {
+        /**
+         * ------------------------------------------------------
+         * Remove Already Scheduled Sessions
+         * ------------------------------------------------------
+         *
+         * This prevents duplicate timetable entries when
+         * the scheduler is run again.
+         *
+         * ------------------------------------------------------
+         */
 
-                const key =
-                    `${session.courseOfferingId}-${session.sessionNumber}`;
+        let sessionsToSchedule =
 
-                if (scheduledKeys.includes(key)) {
+            sessions.filter(
 
-                    skippedSessions++;
+                session => {
 
-                    return false;
+
+                    const key =
+
+                        `${session.courseOfferingId}-${session.sessionNumber}`;
+
+
+                    /**
+                     * Session already exists
+                     */
+
+                    if (
+
+                        scheduledKeys.includes(key)
+
+                    ) {
+
+                        skippedSessions++;
+
+                        return false;
+
+                    }
+
+
+                    /**
+                     * Session still needs scheduling
+                     */
+
+                    return true;
 
                 }
 
-                return true;
-
-            });
+            );
 
 
         /**
-         * ----------------------------------------------------------
-         * Schedule remaining sessions
-         * ----------------------------------------------------------
+         * ------------------------------------------------------
+         * Continue in Part 4...
+         * ------------------------------------------------------
          */
-
-        for (const session of sessions) {
-
-            const placement =
-                findPlacement({
-
-                    session,
-
-                    days,
-
-                    timeSlots,
-
-                    venues,
-
-                    timetableEntries,
-
-                    isGroupSchedule: false
-
-                });
-
-
-            /**
-             * No valid placement found
-             */
-            if (!placement) {
-
-                console.log("\nUnable to schedule session:");
-                console.log(session);
-
-                failedSessions++;
-
-                continue;
-
-            }
-
-            scheduledSessions++;
-
-
-            /**
-             * Select the first available venue
-             */
-            const venue =
-                placement.suitableVenues[0];
-
-            // Continue in Part 3...
-            
-                        /**
-             * ----------------------------------------------------------
-             * Create timetable entries
-             * ----------------------------------------------------------
-             */
-
-            for (const slot of placement.slots) {
-
-                const entry = {
-
-                    course_id:
-                        session.courseId,
-
-                    lecturer_id:
-                        session.lecturerId,
-
-                    department_id:
-                        session.departmentId,
-
-                    faculty_id:
-                        session.facultyId,
-
-                    venue_id:
-                        venue.id,
-
-                    is_group:
-                        false,
-
-                    group_lecture_id:
-                        null,
-
-                    group_participant_id:
-                        null,
-
-                    is_locked:
-                        false,
-
-                    programme_id:
-                        session.programmeId,
-
-                    course_offering_id:
-                        session.courseOfferingId,
-
-                    level_id:
-                        session.levelId,
-
-                    session_id:
-                        session.sessionId,
-
-                    semester_id:
-                        session.semesterId,
-
-                    day_id:
-                        placement.day.id,
-
-                    time_slot_id:
-                        slot.id,
-
-                    course_allocation_id:
-                        session.courseAllocationId,
-
-                    session_number:
-                        session.sessionNumber
-
-                };
-
-
-                entries.push(entry);
-
-
-                /**
-                 * Update in-memory timetable so the
-                 * next session sees these placements.
-                 */
-                timetableEntries.push(entry);
-
-            }
-
-        }
-
-        // Continue in Part 4...
         
-                /**
-         * ----------------------------------------------------------
-         * Persist new timetable entries
-         * ----------------------------------------------------------
-         */
-
-        for (const entry of entries) {
-
-            await repository.saveEntry(entry);
-
-        }
-
-
-        /**
-         * ----------------------------------------------------------
-         * Scheduling Summary
-         * ----------------------------------------------------------
-         */
-
-        return {
-
-            success: true,
-
-            totalSessions,
-
-            skippedSessions,
-
-            scheduledSessions,
-
-            failedSessions,
-
-            createdEntries:
-                entries.length
-
-        };
-
-    }
-
-}
-
-module.exports = new NormalScheduler();

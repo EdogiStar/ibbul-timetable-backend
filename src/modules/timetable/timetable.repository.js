@@ -27,7 +27,8 @@ const TIMETABLE_SELECT = `
   faculties(
     id,
     code,
-    name
+    name,
+    code
   ),
   programmes(
     id,

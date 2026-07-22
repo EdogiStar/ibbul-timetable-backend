@@ -20,6 +20,7 @@ const studentsRoutes = require("./modules/students/students.routes");
 const venuesRoutes = require("./modules/venues/venues.routes");
 const coursesRoutes = require("./modules/courses/courses.routes");
 const courseAllocationRoutes = require("./modules/course-allocation/course-allocation.routes");
+
 const timetableRoutes = require("./modules/timetable/timetable.routes");
 const courseOfferingsRoutes = require("./modules/course-offerings/course-offerings.routes");
 const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
