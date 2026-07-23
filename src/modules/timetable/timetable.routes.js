@@ -28,6 +28,16 @@ router.post(
   controller.generateNormalTimetable
 );
 
+router.post(
+  "/normal/generate-single",
+  timetableController.generateNormalTimetableForOne
+);
+
+router.post(
+  "/normal/generate-single",
+  timetableController
+    .generateSingleNormalTimetable
+);
 /*
 |--------------------------------------------------------------------------
 | Timetable Management

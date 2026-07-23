@@ -36,6 +36,40 @@ exports.generateNormalTimetable = asyncHandler(async (req, res) => {
   );
 });
 
+exports.generateNormalTimetableForOne = asyncHandler(
+  async (req, res) => {
+
+    const result =
+      await timetableService.generateNormalTimetableForOne(
+        req.body
+      );
+
+    return ApiResponse.success(
+      res,
+      result,
+      "Normal timetable generated successfully."
+    );
+
+  }
+);
+
+exports.generateSingleNormalTimetable =
+  asyncHandler(async (req, res) => {
+
+    const result =
+      await timetableService
+        .generateSingleNormalTimetable(
+          req.body
+        );
+
+    return ApiResponse.success(
+      res,
+      result,
+      "Normal timetable generated successfully."
+    );
+
+  });
+
 /**
  * Generate Complete Timetable
  */

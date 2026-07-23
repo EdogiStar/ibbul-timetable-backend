@@ -16,7 +16,6 @@ class TimetableService {
      * Generate Group Timetable
      * ----------------------------------------------------------
      */
-
     async generateGroupTimetable() {
 
         return await groupScheduler.generate();
@@ -29,11 +28,13 @@ class TimetableService {
      * Generate Normal Timetable
      * ----------------------------------------------------------
      *
-     * Schedules all eligible normal course offerings.
+     * BULK MODE
+     *
+     * Generates schedules for all eligible
+     * normal course offerings.
      *
      * ----------------------------------------------------------
      */
-
     async generateNormalTimetable() {
 
         return await normalScheduler.generate();
@@ -43,42 +44,47 @@ class TimetableService {
 
     /**
      * ----------------------------------------------------------
-     * Generate Normal Timetable For Selected Allocations
+     * Generate Normal Timetable For One Course
      * ----------------------------------------------------------
      *
-     * Used when we want to schedule:
+     * SINGLE MODE
      *
-     * - One course allocation
-     * - Multiple selected course allocations
+     * Used when admin selects a specific
+     * course allocation and a specific free slot.
      *
-     * The scheduler handles the actual scheduling logic.
+     * Example:
+     *
+     * generateNormalTimetableForOne({
+     *     courseAllocationId,
+     *     targetSlot
+     * })
      *
      * ----------------------------------------------------------
      */
-
-    async generateNormalTimetableForAllocations(
-        courseAllocationIds
-    ) {
-
-        if (
-            !Array.isArray(courseAllocationIds) ||
-            courseAllocationIds.length === 0
-        ) {
-
-            throw new Error(
-                "At least one course allocation is required."
-            );
-
-        }
-
+    async generateNormalTimetableForOne(payload) {
 
         return await normalScheduler.generate({
 
-            courseAllocationIds
+            courseAllocationId:
+                payload.courseAllocationId,
+
+            targetSlot:
+                payload.targetSlot
 
         });
 
     }
+    
+    async generateSingleNormalTimetable(
+  payload
+) {
+
+  return await normalScheduler
+    .generateSingle(
+      payload
+    );
+
+}
 
 
     /**
@@ -93,28 +99,21 @@ class TimetableService {
      *
      * ----------------------------------------------------------
      */
-
     async generateTimetable() {
 
-
         const group =
-
             await groupScheduler.generate();
 
 
         const normal =
-
             await normalScheduler.generate();
 
 
         return {
 
-
             success: true,
 
-
             group,
-
 
             normal
 
@@ -128,20 +127,18 @@ class TimetableService {
      * Create Timetable Entry
      * ----------------------------------------------------------
      *
-     * This remains available for general CRUD operations.
+     * Manual database creation.
      *
-     * The scheduler itself is responsible for automatically
-     * generating timetable entries.
+     * This is kept for CRUD operations.
      *
+     * Scheduling itself is handled by
+     * the scheduling-engine.
      * ----------------------------------------------------------
      */
-
     async createTimetable(payload) {
 
         return await timetableRepository.create(
-
             payload
-
         );
 
     }
@@ -152,13 +149,10 @@ class TimetableService {
      * Retrieve Timetable Entries
      * ----------------------------------------------------------
      */
-
     async getAllTimetables(filters = {}) {
 
         return await timetableRepository.findAll(
-
             filters
-
         );
 
     }
@@ -169,25 +163,16 @@ class TimetableService {
      * Retrieve Single Timetable Entry
      * ----------------------------------------------------------
      */
-
     async getTimetableById(id) {
 
-
         const timetable =
-
-            await timetableRepository.findById(
-
-                id
-
-            );
+            await timetableRepository.findById(id);
 
 
         if (!timetable) {
 
             throw new Error(
-
                 "Timetable entry not found."
-
             );
 
         }
@@ -203,42 +188,24 @@ class TimetableService {
      * Update Timetable Entry
      * ----------------------------------------------------------
      */
-
-    async updateTimetable(
-
-        id,
-
-        payload
-
-    ) {
-
+    async updateTimetable(id, payload) {
 
         const timetable =
-
-            await timetableRepository.findById(
-
-                id
-
-            );
+            await timetableRepository.findById(id);
 
 
         if (!timetable) {
 
             throw new Error(
-
                 "Timetable entry not found."
-
             );
 
         }
 
 
         return await timetableRepository.update(
-
             id,
-
             payload
-
         );
 
     }
@@ -249,34 +216,23 @@ class TimetableService {
      * Delete Timetable Entry
      * ----------------------------------------------------------
      */
-
     async deleteTimetable(id) {
 
-
         const timetable =
-
-            await timetableRepository.findById(
-
-                id
-
-            );
+            await timetableRepository.findById(id);
 
 
         if (!timetable) {
 
             throw new Error(
-
                 "Timetable entry not found."
-
             );
 
         }
 
 
         return await timetableRepository.delete(
-
             id
-
         );
 
     }
@@ -285,5 +241,4 @@ class TimetableService {
 
 
 module.exports =
-
     new TimetableService();

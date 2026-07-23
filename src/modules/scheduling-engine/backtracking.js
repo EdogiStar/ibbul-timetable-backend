@@ -1,39 +1,182 @@
-const { canPlaceSession } = require("./constraintChecker");
+const {
+    canPlaceSession
+} = require("./constraintChecker");
+
 
 /**
  * ------------------------------------------------------------------
  * Backtracking Scheduler
  * ------------------------------------------------------------------
- * Shared scheduling engine for:
- * - Group lectures
- * - Normal lectures
+ *
+ * Shared by:
+ *
+ * 1. Group Scheduler
+ * 2. Normal Scheduler
+ *
+ * Supports:
+ *
+ * - Bulk scheduling
+ * - Single-slot scheduling
+ *
  * ------------------------------------------------------------------
  */
 
 
 /**
- * Find the first valid placement for a session.
+ * ------------------------------------------------------------------
+ * Find Placement
+ * ------------------------------------------------------------------
+ *
+ * BULK MODE
+ *
+ * targetSlot = null
+ *
+ * The scheduler searches through:
+ *
+ * Day
+ *   ↓
+ * Time Slot
+ *   ↓
+ * Venue
+ *
+ *
+ * SINGLE MODE
+ *
+ * targetSlot = {
+ *     dayId,
+ *     timeSlotId,
+ *     venueId
+ * }
+ *
+ * The scheduler checks ONLY that exact location.
+ *
+ * ------------------------------------------------------------------
  */
 function findPlacement({
 
     session,
+
     days,
+
     timeSlots,
+
     venues,
+
     timetableEntries,
-    isGroupSchedule
+
+    isGroupSchedule,
+
+    targetSlot = null
 
 }) {
 
-    const suitableVenues = session.venueType
+
+    const suitableVenues =
+        session.venueType
+
         ? venues.filter(
             venue =>
-                venue.venue_type === session.venueType
+            venue.venue_type === session.venueType
         )
+
         : venues;
 
 
+
+    /**
+     * ------------------------------------------------------
+     * SINGLE SLOT MODE
+     * ------------------------------------------------------
+     *
+     * Used by manual scheduling from modal.
+     *
+     * Only check the selected slot.
+     *
+     * ------------------------------------------------------
+     */
+
+    if (targetSlot) {
+
+
+        const selectedVenue =
+            suitableVenues.find(
+                venue =>
+                venue.id === targetSlot.venue.id
+            );
+
+
+        if (!selectedVenue) {
+
+            return null;
+
+        }
+
+
+
+        const valid =
+            canPlaceSession({
+
+                session,
+
+                day:
+                    targetSlot.day,
+
+                slots:
+                    targetSlot.slots,
+
+                venue:
+                    selectedVenue,
+
+                timetableEntries,
+
+                isGroupSchedule
+
+            });
+
+
+
+        if (!valid) {
+
+            return null;
+
+        }
+
+
+
+        return {
+
+            day:
+                targetSlot.day,
+
+
+            slots:
+                targetSlot.slots,
+
+
+            suitableVenues:[
+                selectedVenue
+            ]
+
+        };
+
+    }
+
+
+
+
+    /**
+     * ------------------------------------------------------
+     * BULK MODE
+     * ------------------------------------------------------
+     *
+     * Existing scheduler behaviour.
+     *
+     * ------------------------------------------------------
+     */
+
+
     for (const day of days) {
+
 
         for (
             let startIndex = 0;
@@ -41,144 +184,280 @@ function findPlacement({
             startIndex++
         ) {
 
-            const slots = timeSlots.slice(
-                startIndex,
-                startIndex + session.duration
-            );
+
+            const slots =
+                timeSlots.slice(
+                    startIndex,
+                    startIndex + session.duration
+                );
+
 
 
             if (
                 slots.length !== session.duration
             ) {
+
                 continue;
+
             }
+
+
 
 
             const availableVenues = [];
 
-for (const venue of suitableVenues) {
 
-    const valid = canPlaceSession({
 
-        session,
-        day,
-        slots,
-        venue,
-        timetableEntries,
-        isGroupSchedule
+            for (const venue of suitableVenues) {
 
-    });
 
-    if (valid) {
-        availableVenues.push(venue);
-    }
+                const valid =
+                    canPlaceSession({
 
-}
+                        session,
 
-if (availableVenues.length > 0) {
+                        day,
 
-    return {
+                        slots,
 
-        day,
-        slots,
-        suitableVenues: availableVenues
+                        venue,
 
-    };
+                        timetableEntries,
 
-}
+                        isGroupSchedule
+
+                    });
+
+
+
+                if (valid) {
+
+                    availableVenues.push(
+                        venue
+                    );
+
+                }
+
+            }
+
+
+
+            if (
+                availableVenues.length > 0
+            ) {
+
+
+                return {
+
+
+                    day,
+
+
+                    slots,
+
+
+                    suitableVenues:
+                        availableVenues
+
+
+                };
+
+
+            }
+
+
         }
 
+
     }
+
+
 
     return null;
 
 }
-
-
 /**
- * Recursive scheduler.
+ * ------------------------------------------------------------------
+ * Recursive Scheduler
+ * ------------------------------------------------------------------
+ *
+ * Used for scheduling multiple sessions.
+ *
+ * The function remains compatible with the existing
+ * group scheduling implementation.
+ *
+ * ------------------------------------------------------------------
  */
 function scheduleSessions({
 
     sessions,
+
     sessionIndex = 0,
+
     days,
+
     timeSlots,
+
     venues,
+
     timetableEntries,
+
     placements,
+
     isGroupSchedule
 
 }) {
 
-    if (sessionIndex >= sessions.length) {
+
+    /**
+     * --------------------------------------------------------------
+     * All Sessions Scheduled
+     * --------------------------------------------------------------
+     */
+
+    if (
+        sessionIndex >=
+        sessions.length
+    ) {
+
         return true;
+
     }
 
 
-    const session =
-        sessions[sessionIndex];
+    /**
+     * --------------------------------------------------------------
+     * Current Session
+     * --------------------------------------------------------------
+     */
 
+    const session =
+        sessions[
+            sessionIndex
+        ];
+
+
+    /**
+     * --------------------------------------------------------------
+     * Find Placement
+     * --------------------------------------------------------------
+     */
 
     const placement =
+
         findPlacement({
 
             session,
+
             days,
+
             timeSlots,
+
             venues,
+
             timetableEntries,
+
             isGroupSchedule
 
         });
 
 
+    /**
+     * --------------------------------------------------------------
+     * No Placement
+     * --------------------------------------------------------------
+     */
+
     if (!placement) {
+
         return false;
+
     }
 
+
+    /**
+     * --------------------------------------------------------------
+     * Select First Suitable Venue
+     * --------------------------------------------------------------
+     */
+
+    const venue =
+
+        placement
+            .suitableVenues[0];
+
+
+    /**
+     * --------------------------------------------------------------
+     * Store Placement
+     * --------------------------------------------------------------
+     */
 
     placements.push({
 
         session,
-        day: placement.day,
-        slots: placement.slots,
-        venue: placement.suitableVenues[0]
+
+        day:
+            placement.day,
+
+        slots:
+            placement.slots,
+
+        venue
 
     });
 
 
-    placement.slots.forEach(slot => {
+    /**
+     * --------------------------------------------------------------
+     * Update In-Memory Timetable
+     * --------------------------------------------------------------
+     */
 
-        timetableEntries.push({
+    placement.slots.forEach(
 
-            lecturer_id:
-                session.lecturerId || null,
+        slot => {
 
-            programme_id:
-                session.programmeId,
+            timetableEntries.push({
 
-            level_id:
-                session.levelId,
+                lecturer_id:
+                    session.lecturerId ||
+                    null,
 
-            venue_id:
-    placement.suitableVenues[0].id,
+                programme_id:
+                    session.programmeId,
 
-            day_id:
-                placement.day.id,
+                level_id:
+                    session.levelId,
 
-            time_slot_id:
-                slot.id,
+                venue_id:
+                    venue.id,
 
-            group_lecture_id:
-                session.groupLectureId || null
+                day_id:
+                    placement.day.id,
 
-        });
+                time_slot_id:
+                    slot.id,
 
-    });
+                group_lecture_id:
+                    session.groupLectureId ||
+                    null
 
+            });
+
+        }
+
+    );
+
+
+    /**
+     * --------------------------------------------------------------
+     * Recursively Schedule Next Session
+     * --------------------------------------------------------------
+     */
 
     const success =
+
         scheduleSessions({
 
             sessions,
@@ -187,25 +466,55 @@ function scheduleSessions({
                 sessionIndex + 1,
 
             days,
+
             timeSlots,
+
             venues,
+
             timetableEntries,
+
             placements,
+
             isGroupSchedule
 
         });
 
 
+    /**
+     * --------------------------------------------------------------
+     * Successful
+     * --------------------------------------------------------------
+     */
+
     if (success) {
+
         return true;
+
     }
 
 
+    /**
+     * --------------------------------------------------------------
+     * BACKTRACK
+     * --------------------------------------------------------------
+     */
+
     placements.pop();
 
+
+    /**
+     * Remove the timetable entries
+     * created for this placement.
+     * --------------------------------------------------------------
+     */
+
     timetableEntries.splice(
-        timetableEntries.length - placement.slots.length,
+
+        timetableEntries.length -
+        placement.slots.length,
+
         placement.slots.length
+
     );
 
 
@@ -217,6 +526,7 @@ function scheduleSessions({
 module.exports = {
 
     findPlacement,
+
     scheduleSessions
 
 };

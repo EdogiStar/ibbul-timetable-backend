@@ -1,34 +1,21 @@
-const supabase =
-    require("../../../database/supabase");
-
+const supabase = require("../../../database/supabase");
 
 class NormalRepository {
-
 
     /**
      * ----------------------------------------------------------
      * Get Course Offerings
      * ----------------------------------------------------------
      */
-
     async getCourseOfferings() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("course_offerings")
-
             .select("*");
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -40,25 +27,15 @@ class NormalRepository {
      * Get Courses
      * ----------------------------------------------------------
      */
-
     async getCourses() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("courses")
-
             .select("*");
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -70,25 +47,15 @@ class NormalRepository {
      * Get Departments
      * ----------------------------------------------------------
      */
-
     async getDepartments() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("departments")
-
             .select("*");
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -99,43 +66,78 @@ class NormalRepository {
      * ----------------------------------------------------------
      * Get Course Allocations
      * ----------------------------------------------------------
-     *
-     * A course allocation is optional.
-     *
-     * Therefore, the scheduler must NOT assume that
-     * every course has a lecturer assigned.
-     *
-     * If no allocation exists:
-     *
-     * lecturer_id = null
-     *
-     * The course can still be scheduled.
-     *
-     * ----------------------------------------------------------
      */
-
     async getCourseAllocations() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("course_allocations")
-
             .select("*");
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
     }
+    
+    async getCourseAllocationById(id) {
+
+  const { data, error } = await supabase
+    .from("course_allocations")
+    .select(`
+      *,
+      course_offerings(
+        id,
+        course_id,
+        programme_id,
+        level_id,
+        session_id,
+        semester_id,
+        is_compulsory,
+        courses(
+          id,
+          course_code,
+          course_title,
+          credit_unit,
+          hours_per_week,
+          preferred_venue_type,
+          department_id
+        ),
+        programmes(
+          id,
+          code,
+          name
+        ),
+        levels(
+          id,
+          code,
+          name
+        ),
+        academic_sessions(
+          id,
+          name
+        ),
+        semesters(
+          id,
+          code,
+          name
+        )
+      ),
+      lecturers(
+        id,
+        full_name,
+        staff_id
+      )
+    `)
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+
+}
 
 
     /**
@@ -145,28 +147,20 @@ class NormalRepository {
      *
      * Used to prevent normal scheduler from scheduling
      * courses already handled by the group scheduler.
-     *
      * ----------------------------------------------------------
      */
-
     async getGroupLectures() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("group_lectures")
-
-            .select("course_id");
-
+            .select(`
+                id,
+                course_id
+            `);
 
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -178,18 +172,11 @@ class NormalRepository {
      * Get Days
      * ----------------------------------------------------------
      */
-
     async getDays() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("days")
-
             .select("*")
-
             .order(
                 "sort_order",
                 {
@@ -197,13 +184,9 @@ class NormalRepository {
                 }
             );
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -215,18 +198,11 @@ class NormalRepository {
      * Get Time Slots
      * ----------------------------------------------------------
      */
-
     async getTimeSlots() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("time_slots")
-
             .select("*")
-
             .order(
                 "sort_order",
                 {
@@ -234,13 +210,9 @@ class NormalRepository {
                 }
             );
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -252,25 +224,15 @@ class NormalRepository {
      * Get Venues
      * ----------------------------------------------------------
      */
-
     async getVenues() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("venues")
-
             .select("*");
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -282,33 +244,27 @@ class NormalRepository {
      * Get Existing Timetable
      * ----------------------------------------------------------
      *
-     * Existing entries are loaded into memory before
-     * scheduling begins.
+     * Used by the scheduler to detect:
      *
-     * The backtracking algorithm uses them to avoid
-     * conflicts with existing lectures.
+     * - Lecturer conflicts
+     * - Programme conflicts
+     * - Level conflicts
+     * - Venue conflicts
+     * - Existing scheduled sessions
      *
+     * Both group and normal timetable entries
+     * are loaded because they share the same timetable.
      * ----------------------------------------------------------
      */
-
     async getExistingTimetable() {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("timetable_entries")
-
             .select("*");
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -320,29 +276,17 @@ class NormalRepository {
      * Save Timetable Entry
      * ----------------------------------------------------------
      */
-
     async saveEntry(payload) {
 
-        const {
-            data,
-            error
-        } = await supabase
-
+        const { data, error } = await supabase
             .from("timetable_entries")
-
             .insert(payload)
-
             .select()
-
             .single();
 
-
         if (error) {
-
             throw error;
-
         }
-
 
         return data;
 
@@ -353,4 +297,3 @@ class NormalRepository {
 
 module.exports =
     new NormalRepository();
-    
