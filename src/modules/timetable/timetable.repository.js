@@ -253,61 +253,87 @@ if (filters.isLocked !== undefined) {
     return data;
   }
   
-  /**
+/**
  * ----------------------------------------------------------
  * Get Available Venues
  * ----------------------------------------------------------
  *
- * Returns venues that are not occupied
- * on the selected day and time slot.
+ * Returns venues that are free on the selected
+ * day and time slot.
  *
  * ----------------------------------------------------------
  */
 async getAvailableVenues(dayId, timeSlotId) {
 
-    /**
-     * ------------------------------------------------------
-     * Get all venues
-     * ------------------------------------------------------
-     */
+  /**
+   * --------------------------------------------------------
+   * Get all venues
+   * --------------------------------------------------------
+   */
+  const {
+    data: venues,
+    error: venuesError,
+  } = await supabase
+    .from("venues")
+    .select(`
+      id,
+      venue_code,
+      venue_name,
+      capacity,
+      venue_type
+    `)
+    .order("venue_code");
 
-    const {
-        data: venues,
-        error: venuesError
-    } = await supabase
-        .from("venues")
-        .select("*")
-        .order("venue_code");
-
-
-    if (venuesError) {
-        throw venuesError;
-    }
-
-
-
-    /**
-     * ------------------------------------------------------
-     * Get occupied venues
-     * ------------------------------------------------------
-     */
-
-    const {
-        data: occupiedEntries,
-        error: occupiedError
-    } = await supabase
-        .from("timetable_entries")
-        .select("venue_id")
-        .eq("day_id", dayId)
-        .eq("time_slot_id", timeSlotId);
+  if (venuesError) {
+    throw venuesError;
+  }
 
 
-    if (occupiedError) {
-        throw occupiedError;
-    }
+  /**
+   * --------------------------------------------------------
+   * Get occupied venues for this exact slot
+   * --------------------------------------------------------
+   */
+  const {
+    data: occupiedEntries,
+    error: occupiedError,
+  } = await supabase
+    .from("timetable_entries")
+    .select(`
+      venue_id
+    `)
+    .eq("day_id", dayId)
+    .eq("time_slot_id", timeSlotId)
+    .not("venue_id", "is", null);
+
+  if (occupiedError) {
+    throw occupiedError;
+  }
 
 
+  /**
+   * --------------------------------------------------------
+   * Extract occupied venue IDs
+   * --------------------------------------------------------
+   */
+  const occupiedVenueIds = new Set(
+    occupiedEntries.map(
+      (entry) => entry.venue_id
+    )
+  );
 
+
+  /**
+   * --------------------------------------------------------
+   * Return only free venues
+   * --------------------------------------------------------
+   */
+  return venues.filter(
+    (venue) =>
+      !occupiedVenueIds.has(venue.id)
+  );
+
+}
     /**
      * ------------------------------------------------------
      * Create Set of Occupied Venue IDs
