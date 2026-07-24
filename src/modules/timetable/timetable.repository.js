@@ -252,6 +252,92 @@ if (filters.isLocked !== undefined) {
 
     return data;
   }
+  
+  /**
+ * ----------------------------------------------------------
+ * Get Available Venues
+ * ----------------------------------------------------------
+ *
+ * Returns venues that are not occupied
+ * on the selected day and time slot.
+ *
+ * ----------------------------------------------------------
+ */
+async getAvailableVenues(dayId, timeSlotId) {
+
+    /**
+     * ------------------------------------------------------
+     * Get all venues
+     * ------------------------------------------------------
+     */
+
+    const {
+        data: venues,
+        error: venuesError
+    } = await supabase
+        .from("venues")
+        .select("*")
+        .order("venue_code");
+
+
+    if (venuesError) {
+        throw venuesError;
+    }
+
+
+
+    /**
+     * ------------------------------------------------------
+     * Get occupied venues
+     * ------------------------------------------------------
+     */
+
+    const {
+        data: occupiedEntries,
+        error: occupiedError
+    } = await supabase
+        .from("timetable_entries")
+        .select("venue_id")
+        .eq("day_id", dayId)
+        .eq("time_slot_id", timeSlotId);
+
+
+    if (occupiedError) {
+        throw occupiedError;
+    }
+
+
+
+    /**
+     * ------------------------------------------------------
+     * Create Set of Occupied Venue IDs
+     * ------------------------------------------------------
+     */
+
+    const occupiedVenueIds =
+        new Set(
+            occupiedEntries.map(
+                entry =>
+                    entry.venue_id
+            )
+        );
+
+
+
+    /**
+     * ------------------------------------------------------
+     * Return Only Available Venues
+     * ------------------------------------------------------
+     */
+
+    return venues.filter(
+        venue =>
+            !occupiedVenueIds.has(
+                venue.id
+            )
+    );
+
+}
 
   /**
    * Delete timetable entry

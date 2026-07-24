@@ -53,6 +53,59 @@ exports.generateNormalTimetableForOne = asyncHandler(
   }
 );
 
+
+/**
+ * ----------------------------------------------------------
+ * Get Available Venues
+ * ----------------------------------------------------------
+ */
+exports.getAvailableVenues =
+    asyncHandler(
+        async (req, res) => {
+
+            const {
+                dayId,
+                timeSlotId
+            } = req.query;
+
+
+
+            /**
+             * Validate Query Parameters
+             */
+            if (
+                !dayId ||
+                !timeSlotId
+            ) {
+
+                return ApiResponse.error(
+                    res,
+                    "dayId and timeSlotId are required.",
+                    400
+                );
+
+            }
+
+
+
+            const venues =
+                await timetableService
+                    .getAvailableVenues(
+                        dayId,
+                        timeSlotId
+                    );
+
+
+
+            return ApiResponse.success(
+                res,
+                venues,
+                "Available venues retrieved successfully."
+            );
+
+        }
+    );
+    
 exports.generateSingleNormalTimetable =
   asyncHandler(async (req, res) => {
 

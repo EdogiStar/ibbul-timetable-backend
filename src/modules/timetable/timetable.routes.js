@@ -30,14 +30,16 @@ router.post(
 
 router.post(
   "/normal/generate-single",
-  timetableController.generateNormalTimetableForOne
+  authMiddleware("SUPER_ADMIN"),
+  controller.generateNormalTimetableForOne
 );
 
 router.post(
   "/normal/generate-single",
-  timetableController
-    .generateSingleNormalTimetable
+  authMiddleware("SUPER_ADMIN"),
+  controller.generateSingleNormalTimetable
 );
+
 /*
 |--------------------------------------------------------------------------
 | Timetable Management
@@ -54,6 +56,11 @@ router.get(
   "/",
   authMiddleware("SUPER_ADMIN"),
   controller.getAllTimetables
+);
+
+router.get(
+    "/available-venues",
+    timetableController.getAvailableVenues
 );
 
 router.get(

@@ -35,6 +35,25 @@ class TimetableService {
      *
      * ----------------------------------------------------------
      */
+    
+     /**
+ * ----------------------------------------------------------
+ * Get Available Venues
+ * ----------------------------------------------------------
+ */
+async getAvailableVenues(
+    dayId,
+    timeSlotId
+) {
+
+    return await timetableRepository
+        .getAvailableVenues(
+            dayId,
+            timeSlotId
+        );
+
+}
+
     async generateNormalTimetable() {
 
         return await normalScheduler.generate();
