@@ -59,8 +59,9 @@ router.get(
 );
 
 router.get(
-    "/available-venues",
-    timetableController.getAvailableVenues
+  "/available-venues",
+  authMiddleware("SUPER_ADMIN"),
+  controller.getAvailableVenues
 );
 
 router.get(
