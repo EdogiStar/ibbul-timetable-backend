@@ -25,10 +25,11 @@ const TIMETABLE_SELECT = `
     name
   ),
   faculties(
-    id,
-    code,
-    name
-  ),
+  id,
+  code,
+  name,
+  color
+),
   programmes(
     id,
     code,
