@@ -13,10 +13,23 @@ class CourseOfferingsRepository {
           course_title
         ),
         programmes(
-          id,
-          code,
-          name
-        ),
+  id,
+  code,
+  name,
+  department_id,
+  departments(
+    id,
+    code,
+    name,
+    faculty_id,
+    faculties(
+      id,
+      code,
+      name,
+      color
+    )
+  )
+),
         levels(
           id,
           code,
@@ -49,11 +62,25 @@ class CourseOfferingsRepository {
           course_code,
           course_title
         ),
-        programmes(
-          id,
-          code,
-          name
-        ),
+        
+       programmes(
+  id,
+  code,
+  name,
+  department_id,
+  departments(
+    id,
+    code,
+    name,
+    faculty_id,
+    faculties(
+      id,
+      code,
+      name,
+      color
+    )
+  )
+),
         levels(
           id,
           code,
@@ -86,11 +113,24 @@ class CourseOfferingsRepository {
           course_code,
           course_title
         ),
-        programmes(
-          id,
-          code,
-          name
-        ),
+       programmes(
+  id,
+  code,
+  name,
+  department_id,
+  departments(
+    id,
+    code,
+    name,
+    faculty_id,
+    faculties(
+      id,
+      code,
+      name,
+      color
+    )
+  )
+),
         levels(
           id,
           code,
@@ -126,11 +166,24 @@ class CourseOfferingsRepository {
         course_code,
         course_title
       ),
-      programmes(
-        id,
-        code,
-        name
-      ),
+     programmes(
+  id,
+  code,
+  name,
+  department_id,
+  departments(
+    id,
+    code,
+    name,
+    faculty_id,
+    faculties(
+      id,
+      code,
+      name,
+      color
+    )
+  )
+),
       levels(
         id,
         code,

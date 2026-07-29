@@ -34,8 +34,13 @@ router.post(
   controller.generateNormalTimetableForOne
 );
 
+
+/**
+ * Manual single lecture scheduling
+ * Used by timetable grid modal
+ */
 router.post(
-  "/normal/generate-single",
+  "/normal/add-single",
   authMiddleware("SUPER_ADMIN"),
   controller.generateSingleNormalTimetable
 );

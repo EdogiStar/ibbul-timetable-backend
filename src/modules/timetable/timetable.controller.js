@@ -118,7 +118,7 @@ exports.generateSingleNormalTimetable =
     return ApiResponse.success(
       res,
       result,
-      "Normal timetable generated successfully."
+      "Lecture added to timetable successfully."
     );
 
   });

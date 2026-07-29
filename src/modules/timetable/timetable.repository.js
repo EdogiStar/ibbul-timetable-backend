@@ -432,6 +432,30 @@ class TimetableRepository {
 
   }
 
+  /**
+ * ----------------------------------------------------------
+ * Save timetable entry from scheduler
+ * ----------------------------------------------------------
+ */
+async saveEntry(payload) {
+
+  const {
+    data,
+    error
+  } = await supabase
+    .from("timetable_entries")
+    .insert(payload)
+    .select(TIMETABLE_SELECT)
+    .single();
+
+
+  if (error) throw error;
+
+
+  return data;
+
+}
+
 
   /**
    * ----------------------------------------------------------
