@@ -255,6 +255,34 @@ async getAvailableVenues(
         );
 
     }
+    
+    /**
+ * ----------------------------------------------------------
+ * Clear Entire Timetable
+ * ----------------------------------------------------------
+ *
+ * Deletes all records from timetable_entries.
+ *
+ * This does NOT delete:
+ * - Courses
+ * - Course offerings
+ * - Course allocations
+ * - Lecturers
+ * - Venues
+ * - Group lectures
+ * - Departments
+ * - Programmes
+ * - Levels
+ *
+ * Only generated timetable entries are removed.
+ * ----------------------------------------------------------
+ */
+async clearTimetable() {
+
+    return await timetableRepository
+        .clearAllTimetables();
+
+}
 
 }
 

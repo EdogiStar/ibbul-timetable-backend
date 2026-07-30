@@ -479,6 +479,41 @@ async saveEntry(payload) {
 
     return true;
   }
+  
+  /**
+ * ----------------------------------------------------------
+ * Clear All Timetable Entries
+ * ----------------------------------------------------------
+ *
+ * Deletes every record from timetable_entries.
+ *
+ * Only timetable entries are affected.
+ * Other database tables remain untouched.
+ *
+ * ----------------------------------------------------------
+ */
+async clearAllTimetables() {
+
+  const {
+    data,
+    error
+  } = await supabase
+    .from("timetable_entries")
+    .delete()
+    .not(
+      "id",
+      "is",
+      null
+    )
+    .select("id");
+
+  if (error) throw error;
+
+  return data
+    ? data.length
+    : 0;
+
+}
 
 }
 

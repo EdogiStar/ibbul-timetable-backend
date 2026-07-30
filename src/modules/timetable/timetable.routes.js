@@ -69,6 +69,12 @@ router.get(
   controller.getAvailableVenues
 );
 
+router.delete(
+  "/clear",
+  authMiddleware("SUPER_ADMIN"),
+  controller.clearTimetable
+);
+
 router.get(
   "/:id",
   authMiddleware("SUPER_ADMIN"),

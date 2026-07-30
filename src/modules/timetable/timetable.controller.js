@@ -230,3 +230,23 @@ exports.deleteTimetable = asyncHandler(async (req, res) => {
     "Timetable entry deleted successfully."
   );
 });
+
+/**
+ * Clear Entire Timetable
+ *
+ * Deletes all generated timetable entries.
+ * Does not affect courses, course offerings,
+ * lecturers, venues, allocations, or group lectures.
+ */
+exports.clearTimetable = asyncHandler(async (req, res) => {
+  const deletedCount =
+    await timetableService.clearTimetable();
+
+  return ApiResponse.success(
+    res,
+    {
+      deletedCount,
+    },
+    "Timetable cleared successfully."
+  );
+});
