@@ -492,6 +492,11 @@ async saveEntry(payload) {
  *
  * ----------------------------------------------------------
  */
+/**
+ * ----------------------------------------------------------
+ * Clear All Timetable Entries
+ * ----------------------------------------------------------
+ */
 async clearAllTimetables() {
 
   const {
@@ -500,14 +505,19 @@ async clearAllTimetables() {
   } = await supabase
     .from("timetable_entries")
     .delete()
-    .not(
-      "id",
-      "is",
-      null
-    )
+    .not("id", "is", null)
     .select("id");
 
-  if (error) throw error;
+  if (error) {
+
+    console.error(
+      "CLEAR TIMETABLE ERROR:",
+      error
+    );
+
+    throw error;
+
+  }
 
   return data
     ? data.length
