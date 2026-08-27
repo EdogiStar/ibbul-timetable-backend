@@ -1,4 +1,5 @@
-const repository = require("./repository");
+const repository =
+    require("./repository");
 
 const {
     generateSessions
@@ -17,24 +18,18 @@ class NormalScheduler {
      * Generate Normal Timetable
      * ----------------------------------------------------------
      *
-     * Supports two modes:
+     * Supports:
      *
-     * 1. Bulk Scheduling
+     * 1. Bulk scheduling
      *
      *    generate()
      *
-     *    Schedules all eligible normal course offerings.
-     *
-     *
-     * 2. Single Scheduling
+     * 2. Single allocation scheduling
      *
      *    generate({
      *        courseAllocationId,
      *        targetSlot
      *    })
-     *
-     *    Schedules one selected course allocation
-     *    into a selected free slot.
      *
      * ----------------------------------------------------------
      */
@@ -143,8 +138,11 @@ class NormalScheduler {
          * SINGLE MODE
          * ------------------------------------------------------
          *
-         * Only schedule the course offering
-         * belonging to the selected allocation.
+         * Existing allocation-based scheduler.
+         *
+         * This path is kept for the existing
+         * generateNormalTimetableForOne()
+         * functionality.
          * ------------------------------------------------------
          */
 
@@ -210,6 +208,7 @@ class NormalScheduler {
                     /**
                      * Find Course
                      */
+
                     const course =
                         courses.find(
 
@@ -231,6 +230,7 @@ class NormalScheduler {
                     /**
                      * Find Department
                      */
+
                     const department =
                         departments.find(
 
@@ -245,12 +245,10 @@ class NormalScheduler {
                     /**
                      * Find Course Allocation
                      *
-                     * In single mode we already know
-                     * the selected allocation.
-                     *
-                     * In bulk mode we find the
-                     * allocation belonging to the offering.
+                     * Allocation remains optional
+                     * for bulk scheduling.
                      */
+
                     const allocation =
 
                         isSingleMode
@@ -282,6 +280,7 @@ class NormalScheduler {
                         /**
                          * Course Information
                          */
+
                         course_id:
                             course.id,
 
@@ -292,6 +291,7 @@ class NormalScheduler {
                         /**
                          * Academic Structure
                          */
+
                         programme_id:
                             offering.programme_id,
 
@@ -308,6 +308,7 @@ class NormalScheduler {
                         /**
                          * Department / Faculty
                          */
+
                         department_id:
                             course.department_id,
 
@@ -318,7 +319,11 @@ class NormalScheduler {
 
                         /**
                          * Lecturer
+                         *
+                         * NULL is allowed when the
+                         * course has no allocation.
                          */
+
                         lecturer_id:
                             allocation?.lecturer_id ||
                             null,
@@ -327,6 +332,7 @@ class NormalScheduler {
                         /**
                          * Allocation
                          */
+
                         course_allocation_id:
                             allocation?.id ||
                             null
@@ -376,14 +382,6 @@ class NormalScheduler {
 
         if (isSingleMode) {
 
-            /**
-             * The selected allocation may generate
-             * multiple sessions per week.
-             *
-             * We schedule the first unscheduled
-             * session into the requested slot.
-             */
-
             const scheduledKeys =
 
                 timetableEntries
@@ -432,11 +430,6 @@ class NormalScheduler {
 
             }
 
-
-            /**
-             * Only schedule the first
-             * available session.
-             */
 
             sessions = [
 
@@ -550,18 +543,6 @@ class NormalScheduler {
             /**
              * --------------------------------------------------
              * Find Placement
-             * --------------------------------------------------
-             *
-             * In single mode:
-             *
-             * targetSlot is passed to the
-             * backtracking placement function.
-             *
-             *
-             * In bulk mode:
-             *
-             * targetSlot remains null and
-             * scheduler searches normally.
              * --------------------------------------------------
              */
 
@@ -701,22 +682,11 @@ class NormalScheduler {
                 };
 
 
-                /**
-                 * Add to entries waiting
-                 * to be saved.
-                 */
                 entries.push(
                     entry
                 );
 
 
-                /**
-                 * Update in-memory timetable.
-                 *
-                 * This ensures that the next session
-                 * knows about this newly scheduled
-                 * lecture.
-                 */
                 timetableEntries.push(
                     entry
                 );
@@ -804,242 +774,85 @@ class NormalScheduler {
 
     }
     
-    /**
- * ----------------------------------------------------------
- * Generate Single Normal Timetable
- * ----------------------------------------------------------
- *
- * Used by:
- * - Timetable modal (+ button)
- *
- * Schedules one course allocation
- * into a selected free slot.
- *
- * ----------------------------------------------------------
- */
-
-async generateSingle({
-
-    courseAllocationId,
-
-    targetSlot
-
-}) {
-
-
-    const [
-
-        allocation,
-
-        departments,
-
-        days,
-
-        timeSlots,
-
-        venues,
-
-        timetableEntries
-
-    ] = await Promise.all([
-
-
-        repository.getCourseAllocationById(
-            courseAllocationId
-        ),
-
-
-        repository.getDepartments(),
-
-        repository.getDays(),
-
-        repository.getTimeSlots(),
-
-        repository.getVenues(),
-
-        repository.getExistingTimetable()
-
-
-    ]);
-
-
-
-    if (!allocation) {
-
-        throw new Error(
-            "Course allocation not found."
-        );
-
-    }
-
-
-
-    /**
-     * ------------------------------------------------------
-     * Prepare Course Object
-     * ------------------------------------------------------
+        /**
+     * ----------------------------------------------------------
+     * Generate Single Normal Timetable
+     * ----------------------------------------------------------
+     *
+     * Used by:
+     *
+     * - Timetable grid (+) button
+     *
+     * Schedules one course offering into
+     * a selected day, time slot and venue.
+     *
+     * IMPORTANT:
+     *
+     * A course allocation is OPTIONAL.
+     *
+     * If an allocation exists:
+     * - lecturer is attached
+     * - course_allocation_id is attached
+     *
+     * If no allocation exists:
+     * - lecturer_id = null
+     * - course_allocation_id = null
+     *
+     * The course can still be scheduled.
+     *
+     * ----------------------------------------------------------
      */
 
-    const courseOffering =
-        allocation.course_offerings;
+    async generateSingle({
 
+        courseOfferingId,
 
-    const course =
-        courseOffering.courses;
+        courseAllocationId = null,
 
+        targetSlot
 
+    }) {
 
-    const department =
-        departments.find(
-            item =>
-            item.id === course.department_id
-        );
 
+        /**
+         * ------------------------------------------------------
+         * Validate Required Data
+         * ------------------------------------------------------
+         */
 
+        if (!courseOfferingId) {
 
-    const session = {
+            throw new Error(
+                "Course offering is required."
+            );
 
+        }
 
-        courseId:
-            course.id,
 
+        if (!targetSlot) {
 
-        courseOfferingId:
-            courseOffering.id,
+            throw new Error(
+                "Target timetable slot is required."
+            );
 
+        }
 
-        courseAllocationId:
-            allocation.id,
 
+        /**
+         * ------------------------------------------------------
+         * Load Scheduling Data
+         * ------------------------------------------------------
+         */
 
-        lecturerId:
-            allocation.lecturer_id || null,
+        const [
 
+            courseOffering,
 
-        departmentId:
-            course.department_id,
+            courses,
 
+            departments,
 
-        facultyId:
-            department?.faculty_id || null,
-
-
-        programmeId:
-            courseOffering.programme_id,
-
-
-        levelId:
-            courseOffering.level_id,
-
-
-        sessionId:
-            courseOffering.session_id,
-
-
-        semesterId:
-            courseOffering.semester_id,
-
-
-
-        duration:
-            course.hours_per_session || 1,
-
-
-        venueType:
-            course.preferred_venue_type || null,
-
-
-
-        sessionNumber:
-            1
-
-
-    };
-
-
-
-
-    /**
-     * ------------------------------------------------------
-     * Find Selected Day
-     * ------------------------------------------------------
-     */
-
-    const day =
-        days.find(
-            item =>
-            item.id === targetSlot.dayId
-        );
-
-
-    if (!day) {
-
-        throw new Error(
-            "Invalid day selected."
-        );
-
-    }
-
-
-
-    /**
-     * ------------------------------------------------------
-     * Find Selected Time Slot
-     * ------------------------------------------------------
-     */
-
-    const slot =
-        timeSlots.find(
-            item =>
-            item.id === targetSlot.timeSlotId
-        );
-
-
-    if (!slot) {
-
-        throw new Error(
-            "Invalid time slot selected."
-        );
-
-    }
-
-
-
-
-    /**
-     * ------------------------------------------------------
-     * Find Selected Venue
-     * ------------------------------------------------------
-     */
-
-    const venue =
-        venues.find(
-            item =>
-            item.id === targetSlot.venueId
-        );
-
-
-    if (!venue) {
-
-        throw new Error(
-            "Invalid venue selected."
-        );
-
-    }
-
-
-
-
-    /**
-     * ------------------------------------------------------
-     * Validate Placement
-     * ------------------------------------------------------
-     */
-
-    const placement =
-        findPlacement({
-
-            session,
+            courseAllocations,
 
             days,
 
@@ -1047,128 +860,523 @@ async generateSingle({
 
             venues,
 
-            timetableEntries,
+            timetableEntries
 
-            isGroupSchedule:false,
+        ] = await Promise.all([
 
-            targetSlot:{
-                day,
-                slots:[slot],
-                venue
+            repository.getCourseOfferingById(
+                courseOfferingId
+            ),
+
+            repository.getCourses(),
+
+            repository.getDepartments(),
+
+            repository.getCourseAllocations(),
+
+            repository.getDays(),
+
+            repository.getTimeSlots(),
+
+            repository.getVenues(),
+
+            repository.getExistingTimetable()
+
+        ]);
+
+
+        /**
+         * ------------------------------------------------------
+         * Validate Course Offering
+         * ------------------------------------------------------
+         */
+
+        if (!courseOffering) {
+
+            throw new Error(
+                "Course offering not found."
+            );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Find Course
+         * ------------------------------------------------------
+         */
+
+        const course =
+
+            courses.find(
+
+                item =>
+
+                    item.id ===
+                    courseOffering.course_id
+
+            );
+
+
+        if (!course) {
+
+            throw new Error(
+                "Course attached to this offering was not found."
+            );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Find Department
+         * ------------------------------------------------------
+         */
+
+        const department =
+
+            departments.find(
+
+                item =>
+
+                    item.id ===
+                    course.department_id
+
+            );
+
+
+        /**
+         * ------------------------------------------------------
+         * Find Optional Course Allocation
+         * ------------------------------------------------------
+         *
+         * The course DOES NOT need to be allocated.
+         *
+         * If courseAllocationId was supplied,
+         * verify that it belongs to this course offering.
+         *
+         * If no allocation was supplied, continue with
+         * lecturer_id and course_allocation_id as null.
+         *
+         * ------------------------------------------------------
+         */
+
+        let allocation = null;
+
+
+        if (courseAllocationId) {
+
+            allocation =
+
+                courseAllocations.find(
+
+                    item =>
+
+                        item.id ===
+                        courseAllocationId &&
+
+                        item.course_offering_id ===
+                        courseOfferingId
+
+                );
+
+
+            if (!allocation) {
+
+                throw new Error(
+                    "The selected course allocation does not belong to this course offering."
+                );
+
             }
 
-        });
+        }
 
 
+        /**
+         * ------------------------------------------------------
+         * Prevent Duplicate Course Session
+         * ------------------------------------------------------
+         *
+         * A course offering should not have the same
+         * session number scheduled twice.
+         *
+         * Since manual scheduling creates one session,
+         * we use session number 1.
+         *
+         * ------------------------------------------------------
+         */
 
-    if (!placement) {
+        const existingCourseEntry =
 
-        throw new Error(
-            "Course cannot be scheduled in this slot."
-        );
+            timetableEntries.find(
+
+                entry =>
+
+                    !entry.is_group &&
+
+                    entry.course_offering_id ===
+                    courseOfferingId &&
+
+                    entry.session_number === 1
+
+            );
+
+
+        if (existingCourseEntry) {
+
+            throw new Error(
+                "This course has already been scheduled."
+            );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Prepare Session
+         * ------------------------------------------------------
+         */
+
+        const session = {
+
+            courseId:
+                course.id,
+
+
+            courseOfferingId:
+                courseOffering.id,
+
+
+            courseAllocationId:
+                allocation?.id || null,
+
+
+            lecturerId:
+                allocation?.lecturer_id || null,
+
+
+            departmentId:
+                course.department_id,
+
+
+            facultyId:
+                department?.faculty_id || null,
+
+
+            programmeId:
+                courseOffering.programme_id,
+
+
+            levelId:
+                courseOffering.level_id,
+
+
+            sessionId:
+                courseOffering.session_id,
+
+
+            semesterId:
+                courseOffering.semester_id,
+
+
+            /**
+             * Duration of the lecture.
+             *
+             * Falls back to one slot when
+             * hours_per_session is not available.
+             */
+
+            duration:
+                course.hours_per_session || 1,
+
+
+            venueType:
+                course.preferred_venue_type || null,
+
+
+            sessionNumber:
+                1
+
+        };
+
+
+        /**
+         * ------------------------------------------------------
+         * Find Selected Day
+         * ------------------------------------------------------
+         */
+
+        const day =
+
+            days.find(
+
+                item =>
+
+                    item.id ===
+                    targetSlot.dayId
+
+            );
+
+
+        if (!day) {
+
+            throw new Error(
+                "Invalid day selected."
+            );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Find Selected Time Slot
+         * ------------------------------------------------------
+         */
+
+        const slot =
+
+            timeSlots.find(
+
+                item =>
+
+                    item.id ===
+                    targetSlot.timeSlotId
+
+            );
+
+
+        if (!slot) {
+
+            throw new Error(
+                "Invalid time slot selected."
+            );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Find Selected Venue
+         * ------------------------------------------------------
+         */
+
+        const venue =
+
+            venues.find(
+
+                item =>
+
+                    item.id ===
+                    targetSlot.venueId
+
+            );
+
+
+        if (!venue) {
+
+            throw new Error(
+                "Invalid venue selected."
+            );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Validate Selected Placement
+         * ------------------------------------------------------
+         *
+         * The backtracking engine still performs
+         * all normal conflict checks:
+         *
+         * - Venue conflict
+         * - Lecturer conflict
+         * - Programme conflict
+         * - Level conflict
+         * - Time conflict
+         * - Venue type requirements
+         *
+         * ------------------------------------------------------
+         */
+
+        const placement =
+
+            findPlacement({
+
+                session,
+
+                days,
+
+                timeSlots,
+
+                venues,
+
+                timetableEntries,
+
+                isGroupSchedule:
+                    false,
+
+                targetSlot: {
+
+                    day,
+
+                    slots: [
+                        slot
+                    ],
+
+                    venue
+
+                }
+
+            });
+
+
+        if (!placement) {
+
+            throw new Error(
+                "Course cannot be scheduled in this slot."
+            );
+
+        }
+
+
+        /**
+         * ------------------------------------------------------
+         * Create Timetable Entry
+         * ------------------------------------------------------
+         */
+
+        const entry = {
+
+            course_id:
+                session.courseId,
+
+
+            lecturer_id:
+                session.lecturerId,
+
+
+            department_id:
+                session.departmentId,
+
+
+            faculty_id:
+                session.facultyId,
+
+
+            venue_id:
+                venue.id,
+
+
+            programme_id:
+                session.programmeId,
+
+
+            level_id:
+                session.levelId,
+
+
+            session_id:
+                session.sessionId,
+
+
+            semester_id:
+                session.semesterId,
+
+
+            course_offering_id:
+                session.courseOfferingId,
+
+
+            /**
+             * NULL when the course is not allocated.
+             */
+
+            course_allocation_id:
+                session.courseAllocationId,
+
+
+            day_id:
+                day.id,
+
+
+            time_slot_id:
+                slot.id,
+
+
+            session_number:
+                session.sessionNumber,
+
+
+            is_group:
+                false,
+
+
+            group_lecture_id:
+                null,
+
+
+            group_participant_id:
+                null,
+
+
+            is_locked:
+                false
+
+        };
+
+
+        /**
+         * ------------------------------------------------------
+         * Save Entry
+         * ------------------------------------------------------
+         */
+
+        const savedEntry =
+
+            await repository.saveEntry(
+                entry
+            );
+
+
+        /**
+         * ------------------------------------------------------
+         * Return Result
+         * ------------------------------------------------------
+         */
+
+        return {
+
+            success:
+                true,
+
+
+            mode:
+                "single",
+
+
+            courseOfferingId:
+                courseOfferingId,
+
+
+            courseAllocationId:
+                allocation?.id || null,
+
+
+            scheduledWithoutAllocation:
+                !allocation,
+
+
+            createdEntries:
+                1,
+
+
+            entry:
+                savedEntry
+
+        };
 
     }
-
-
-
-
-    /**
-     * ------------------------------------------------------
-     * Create Timetable Entry
-     * ------------------------------------------------------
-     */
-
-    const entry = {
-
-
-        course_id:
-            session.courseId,
-
-
-        lecturer_id:
-            session.lecturerId,
-
-
-        department_id:
-            session.departmentId,
-
-
-        faculty_id:
-            session.facultyId,
-
-
-        venue_id:
-            venue.id,
-
-
-        programme_id:
-            session.programmeId,
-
-
-        level_id:
-            session.levelId,
-
-
-        session_id:
-            session.sessionId,
-
-
-        semester_id:
-            session.semesterId,
-
-
-        course_offering_id:
-            session.courseOfferingId,
-
-
-        course_allocation_id:
-            session.courseAllocationId,
-
-
-        day_id:
-            day.id,
-
-
-        time_slot_id:
-            slot.id,
-
-
-        session_number:
-            session.sessionNumber,
-
-
-        is_group:false,
-
-
-        group_lecture_id:null,
-
-
-        group_participant_id:null,
-
-
-        is_locked:false
-
-
-    };
-
-
-
-    await repository.saveEntry(
-        entry
-    );
-
-
-
-    return {
-
-        success:true,
-
-        entry
-
-    };
-
-
-}
 
 }
 

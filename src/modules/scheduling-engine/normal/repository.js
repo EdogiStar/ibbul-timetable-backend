@@ -61,6 +61,75 @@ class NormalRepository {
 
     }
 
+    /**
+ * ----------------------------------------------------------
+ * Get Course Offering By ID
+ * ----------------------------------------------------------
+ *
+ * Used for manual timetable scheduling.
+ *
+ * Course allocation is OPTIONAL.
+ * ----------------------------------------------------------
+ */
+async getCourseOfferingById(id) {
+
+    const {
+        data,
+        error
+    } = await supabase
+
+        .from("course_offerings")
+
+        .select(`
+            *,
+            courses(
+                id,
+                course_code,
+                course_title,
+                hours_per_week,
+                hours_per_session,
+                preferred_venue_type,
+                department_id
+            ),
+            programmes(
+                id,
+                code,
+                name
+            ),
+            levels(
+                id,
+                code,
+                name
+            ),
+            academic_sessions(
+                id,
+                name
+            ),
+            semesters(
+                id,
+                code,
+                name
+            )
+        `)
+
+        .eq(
+            "id",
+            id
+        )
+
+        .single();
+
+
+    if (error) {
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
 
     /**
      * ----------------------------------------------------------

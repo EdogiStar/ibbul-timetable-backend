@@ -94,14 +94,30 @@ async getAvailableVenues(
 
     }
     
-    async generateSingleNormalTimetable(
-  payload
-) {
+    async generateSingleNormalTimetable(payload) {
 
-  return await normalScheduler
-    .generateSingle(
-      payload
-    );
+    return await normalScheduler.generateSingle({
+
+        courseOfferingId:
+            payload.courseOfferingId,
+
+        courseAllocationId:
+            payload.courseAllocationId || null,
+
+        targetSlot: {
+
+            dayId:
+                payload.dayId,
+
+            timeSlotId:
+                payload.timeSlotId,
+
+            venueId:
+                payload.venueId
+
+        }
+
+    });
 
 }
 
