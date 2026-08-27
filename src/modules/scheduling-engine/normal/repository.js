@@ -99,7 +99,6 @@ class NormalRepository {
           id,
           course_code,
           course_title,
-          credit_unit,
           hours_per_week,
           preferred_venue_type,
           department_id
@@ -136,7 +135,6 @@ class NormalRepository {
   if (error) throw error;
 
   return data;
-
 }
 
 
